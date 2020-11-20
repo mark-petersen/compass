@@ -41,8 +41,24 @@ def main():
     nEdges = ds['nEdges'].size
     nVertices = ds['nVertices'].size
 
-    lonCell = ds['lonCell']
-    latCell = ds['latCell']
+    xCell = ds['xCell']
+    xEdge = ds['xEdge']
+    xVertex = ds['xVertex']
+    yCell = ds['yCell']
+    yEdge = ds['yEdge']
+    yVertex = ds['yVertex']
+    latCell=ds['latCell']
+    lonCell=ds['lonCell']
+
+    # x values for convenience
+    xMax = max(xCell)
+    xMin = min(xCell)
+    xMid = 0.5 * (xMin + xMax)
+
+    # y values for convenience
+    yMax = max(yCell)
+    yMin = min(yCell)
+    yMid = 0.5 * (yMin + yMax)
 
     comment('create and initialize variables')
     time1 = time.time()
@@ -52,7 +68,7 @@ def main():
         globals()[var] = np.nan * np.ones(nVertLevels)
 
     vars2D = ['ssh', 'bottomDepth', 'bottomDepthObserved',
-        'surfaceStress', 'atmosphericPressure', 'boundaryLayerDepth']
+        'surfaceStress','windStressZonal','windStressMeridional', 'atmosphericPressure', 'boundaryLayerDepth']
     for var in vars2D:
         globals()[var] = np.nan * np.ones(nCells)
     maxLevelCell = np.ones(nCells, dtype=np.int32)
@@ -121,16 +137,38 @@ def main():
 
     # Coriolis parameter
 # Nairita, add f0+beta here
-    fCell = np.zeros([nCells, nVertLevels])
-    fEdge = np.zeros([nEdges, nVertLevels])
-    fVertex = np.zeros([nVertices, nVertLevels])
-    ds['fCell'] = (('nCells', 'nVertLevels',), fCell)
-    ds['fEdge'] = (('nEdges', 'nVertLevels',), fEdge)
-    ds['fVertex'] = (('nVertices', 'nVertLevels',), fVertex)
+    fCell = np.zeros([nCells])
+    fEdge = np.zeros([nEdges])
+    fVertex = np.zeros([nVertices])
+    ds['fCell'] = (('nCells',), fCell)
+    ds['fEdge'] = (('nEdges',), fEdge)
+    ds['fVertex'] = (('nVertices',), fVertex)
+	
+    for iCell in range(0, nCells):
+        fCell[iCell]=2.0*7.29e-5
 
+    for iEdge in range(0, nEdges):
+        fEdge[iEdge]=2.0*7.29e-5
+
+    for iVertex in range(0, nVertices):
+        fVertex[iVertex]=2.0*7.29e-5
     # surface fields
 # Nairita, add surface stress here
-    surfaceStress[:] = 0.0
+    ds['windStressZonal'] = (('nCells',), np.zeros([nCells,]))
+    ds['windStressMeridional'] = (('nCells',), np.zeros([nCells,]))
+    #lonCell = ds.variables['lonCell']
+    #latCell = ds.variables['latCell']
+    # For periodic domains, the max cell coordinate is also the domain width
+    Lx = max(lonCell)
+    Ly = max(latCell)
+
+    for iCell in range(0, nCells):
+        x = xCell[iCell]
+        y = yCell[iCell]
+        #layerThickness[0, iCell,:] = np.exp(-(x-Lx/2.0)**2.0-(y-Ly/2.0)**2.0)
+        windStressZonal[iCell]=-0.1*np.cos(3.14*y/5000000)
+
+    #surfaceStress[:] = 0.0
     atmosphericPressure[:] = 0.0
     boundaryLayerDepth[:] = 0.0
     print('   time: %f' % ((time.time() - time1)))
