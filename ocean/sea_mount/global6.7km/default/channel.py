@@ -16,6 +16,11 @@ def channel():
 
     SPHERE_RADIUS = +6371.0
 
+    minlat = -70.
+    maxlat =  70.
+    minlon =   0.
+    maxlon =  60.
+
     opts = jigsawpy.jigsaw_jig_t()
     geom = jigsawpy.jigsaw_msh_t()
     spac = jigsawpy.jigsaw_msh_t()
@@ -54,9 +59,9 @@ def channel():
     geom.radii = SPHERE_RADIUS * np.ones(3)
     divs = 1024
     add_lat_arc(geom, 
-                +0.0 * np.pi / 180., 
-                -70. * np.pi / 180., 
-                +70. * np.pi / 180., divs)
+                minlon * np.pi / 180., 
+                minlat * np.pi / 180., 
+                maxlat * np.pi / 180., divs)
     
     jigsawpy.savemsh(opts.geom_file, geom)
     jigsawpy.savemsh(opts.hfun_file, spac)
@@ -86,21 +91,21 @@ def channel():
     geom.radii = SPHERE_RADIUS * np.ones(3)
     divs = 1024
     add_lon_arc(geom, 
-                -70. * np.pi / 180., 
-                +0.0 * np.pi / 180., 
-                +60. * np.pi / 180., divs)
+                minlat * np.pi / 180., 
+                minlon * np.pi / 180., 
+                maxlon * np.pi / 180., divs)
     add_lat_arc(geom, 
-                +60. * np.pi / 180., 
-                -70. * np.pi / 180., 
-                +70. * np.pi / 180., divs)
+                maxlon * np.pi / 180., 
+                minlat * np.pi / 180., 
+                maxlat * np.pi / 180., divs)
     add_lon_arc(geom, 
-                +70. * np.pi / 180., 
-                +60. * np.pi / 180., 
-                +0.0 * np.pi / 180., divs)
+                maxlat * np.pi / 180., 
+                maxlon * np.pi / 180., 
+                minlon * np.pi / 180., divs)
     add_lat_arc(geom, 
-                +0.0 * np.pi / 180., 
-                +70. * np.pi / 180., 
-                -70. * np.pi / 180., divs)
+                minlon * np.pi / 180., 
+                maxlat * np.pi / 180., 
+                minlat * np.pi / 180., divs)
 
     jigsawpy.savemsh(opts.geom_file, geom)
 
