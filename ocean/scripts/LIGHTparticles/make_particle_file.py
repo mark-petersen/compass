@@ -19,7 +19,7 @@ modified with `--nvertlevels INT`. Current seeding modes supported are 'linear',
 'log', and 'denseCenter'. One of the three can be passed using `--vertseedtype`.
 
 If isopycnally constrained floats are being used ("buoyancy"), the default number of
-buoyancy surfaces is 11. This can be adjusted with `--nbuoyusurf INT`. They are seeded
+buoyancy surfaces is 11. This can be adjusted with `--nbuoysurf INT`. They are seeded
 linearly between two potential density surfaces, defaulting to [1028.5, 1030]. These
 bounds can be adjusted through `--potdensmin FLOAT` and `--potdensmax FLOAT`.
 
