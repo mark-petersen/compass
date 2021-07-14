@@ -37,7 +37,7 @@ def setup_suite(mpas_core, suite_name, config_file=None, machine=None,
         directories
 
     baseline_dir : str, optional
-        Location of baseslines that can be compared to
+        Location of baselines that can be compared to
 
     mpas_model_path : str, optional
         The relative or absolute path to the root of a branch where the MPAS
@@ -148,7 +148,7 @@ def main():
                         help="The name of the machine for loading machine-"
                              "related config options", metavar="MACH")
     parser.add_argument("-b", "--baseline_dir", dest="baseline_dir",
-                        help="Location of baseslines that can be compared to",
+                        help="Location of baselines that can be compared to",
                         metavar="PATH")
     parser.add_argument("-w", "--work_dir", dest="work_dir",
                         help="If set, script will setup the test suite in "
