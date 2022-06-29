@@ -7,28 +7,35 @@ import shutil
 import numpy as np
 import netCDF4 as nc
 from netCDF4 import Dataset
+#import xarray as xr
 
 Ly = 10000.0e3
 Lz = 1000.0
+nVertLevels = 1
 
 def main():
     # {{{
 
     shutil.copy2('base_mesh.nc', 'initial_state.nc')
     ds = Dataset('initial_state.nc', 'a', format='NETCDF3_64BIT_OFFSET')
-
+    #ds = xr.open_dataset('initial_state.nc')
+    
+    print('vertical_init(ds)')
     vertical_init(ds)
-    tracer_init(ds)
+    print('velocity_init(ds)')
     velocity_init(ds)
-    coriolis_init(ds)
-    others_init(ds)
+    #print('tracer_init(ds)')
+    #tracer_init(ds)
+    #print('coriolis_init(ds)')
+    #coriolis_init(ds)
+    #print('others_init(ds)')
+    #others_init(ds)
 
     ds.close()
 # }}}
 
 def vertical_init(ds):
     thicknessAllLayers = Lz #100.0  # [m] for evenly spaced layers
-    nVertLevels = 1 #int(Lz / thicknessAllLayers)
     minLayers = 3
 # {{{
     # create new variables # {{{
@@ -99,7 +106,7 @@ def vertical_init(ds):
 # }}}
 
 def tracer_init(ds):
-    #slope = 0.001
+    slope = 0.001
     # temperature: linear, match slope
     Tmin = 5.0
     Tx = 0.0
@@ -157,21 +164,103 @@ def tracer_init(ds):
 
 def velocity_init(ds):
     # {{{
+    # obtain dimensions and mesh variables # {{{
+    nCells = len(ds.dimensions['nCells'])
+    xCell = ds.variables['xCell']
+    yCell = ds.variables['yCell']
+    nEdges = len(ds.dimensions['nEdges'])
+    xEdge = ds.variables['xEdge']
+    yEdge = ds.variables['yEdge']
+    angleEdge = ds.variables['angleEdge']
+    # }}}
+    Dc = 100.0e3 # 100km grid cell width
+    nx = 20
+    ny = nx
+
+    g = 10.0
+    f0 = 1e-4
+    H = 1000.0 
+
+    c = np.sqrt(g*H) #= 100 m s^(-1), 
+    Lx = nx*Dc
+    Ly = np.sqrt(3.0)/2.0 *ny*Dc
+    kx = 1*2*np.pi/Lx 
+    ky = 2*2*np.pi/Ly
+    omega = np.sqrt(g*H*(kx**2 + ky**2) + f0**2)
+
+    uEdge = ds.createVariable(
+        'uEdge', np.float64, ('Time', 'nEdges', 'nVertLevels',))
+    vEdge = ds.createVariable(
+        'vEdge', np.float64, ('Time', 'nEdges', 'nVertLevels',))
     normalVelocity = ds.createVariable(
         'normalVelocity', np.float64, ('Time', 'nEdges', 'nVertLevels',))
     normalVelocity[:] = 0.0
     ssh = ds.createVariable(
-        'ssh', np.float64, ('Time', 'nCells', 'nVertLevels',))
+        'ssh', np.float64, ('Time', 'nCells', ))
     ssh[:] = 0.0
+
+    print('velocity_init(ds) cell loop')
+    time = 0.0
+    for iCell in range(0, nCells):
+        x = xCell[iCell]
+        y = yCell[iCell]
+        for k in range(0, nVertLevels):
+            ssh[0, iCell] = omega*np.cos(kx*x + ky*y - omega*time)
+
+    print('velocity_init(ds) edge loop')
+
+    coef = omega*g/(omega**2 - f0**2)
+    for iEdge in range(0, nEdges):
+        x = xEdge[iEdge]
+        y = yEdge[iEdge]
+        cos1 = omega*np.cos(kx*x + ky*y - omega*time)
+        sin1 = f0*np.sin(kx*x + ky*y - omega*time)
+        for k in range(0, nVertLevels):
+            uEdge[0, iEdge, k] = coef*(kx*cos1 - ky*sin1)
+            vEdge[0, iEdge, k] = coef*(ky*cos1 + kx*sin1)
+            normalVelocity[0, iEdge, k]  = uEdge[0,iEdge,k] * np.cos(angleEdge[iEdge]) + vEdge[0,iEdge,k] * np.sin(angleEdge[iEdge])
+
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    mpl.rcParams['figure.figsize'] = (6,16) # Large figures
+    mpl.rcParams['image.cmap'] = 'Spectral'
+
+    ax=plt.subplot(3,1,1)
+    plt.scatter(xCell[:]/1.0e3, yCell[:]/1.0e3, c=ssh[0,:], s=120, marker='h')
+    plt.title('ssh')
+    plt.colorbar()
+
+    ax=plt.subplot(3,1,2)
+    plt.scatter(xEdge[:]/1.0e3, yEdge[:]/1.0e3, c=uEdge[0,:], s=80, marker='d')
+    plt.title('u on edge')
+    plt.colorbar()
+
+    ax=plt.subplot(3,1,3)
+    plt.scatter(xEdge[:]/1.0e3, yEdge[:]/1.0e3, c=vEdge[0,:], s=60, marker='d')
+    plt.title('v on edge')
+    plt.colorbar()
+
+    plt.savefig('igw_ic.png')
+
+#ax.set_xlim(40,44.5)
+    #plt.xlabel('time [days]')
+    #plt.ylabel('depth [m]')
+    #plt.title('AMOC streamfunction [Sv] 26.5N MPAS-O 01b baseline')
+    #plt.colorbar(ticks=np.linspace(-cmax,cmax,9))
+
 # }}}
 
 def coriolis_init(ds):
     # {{{
-    fAll = 1e-4
+    print('b4 fAll')
+    fAll = 1.0e-4
+    print('fEdge')
     fEdge = ds.createVariable('fEdge', np.float64, ('nEdges',))
     fEdge[:] = fAll
+    print('fVertex')
     fVertex = ds.createVariable('fVertex', np.float64, ('nVertices',))
     fVertex[:] = fAll
+    print('fCell')
     fCell = ds.createVariable('fCell', np.float64, ('nCells',))
     fCell[:] = fAll
 # }}}
