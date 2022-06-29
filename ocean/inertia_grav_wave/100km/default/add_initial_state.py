@@ -8,8 +8,8 @@ import numpy as np
 import netCDF4 as nc
 from netCDF4 import Dataset
 
-Ly = 3000.0e3
-Lz = 4800.0
+Ly = 10000.0e3
+Lz = 1000.0
 
 def main():
     # {{{
@@ -27,8 +27,8 @@ def main():
 # }}}
 
 def vertical_init(ds):
-    thicknessAllLayers = 100.0  # [m] for evenly spaced layers
-    nVertLevels = int(Lz / thicknessAllLayers)
+    thicknessAllLayers = Lz #100.0  # [m] for evenly spaced layers
+    nVertLevels = 1 #int(Lz / thicknessAllLayers)
     minLayers = 3
 # {{{
     # create new variables # {{{
@@ -79,8 +79,7 @@ def vertical_init(ds):
     for iCell in range(0, nCells):
         x = xCell[iCell]
         y = yCell[iCell]
-        bottomDepthObserved[iCell] \
-            = 1.1 * Lz * (1.0 - ((y - Ly / 2) / (Ly / 2))**2) - 100
+        bottomDepthObserved[iCell] = Lz
 
     # full cells, not partial
     # initialize to very bottom:
@@ -94,13 +93,13 @@ def vertical_init(ds):
         y = yCell[iCell]
         for k in range(nVertLevels):
             if bottomDepthObserved[iCell] < refBottomDepth[k]:
-                maxLevelCell[iCell] = max(k, minLayers)
+                maxLevelCell[iCell] = 1 #max(k, minLayers)
                 bottomDepth[iCell] = refBottomDepth[maxLevelCell[iCell] - 1]
                 break
 # }}}
 
 def tracer_init(ds):
-    slope = 0.001
+    #slope = 0.001
     # temperature: linear, match slope
     Tmin = 5.0
     Tx = 0.0
@@ -148,33 +147,12 @@ def tracer_init(ds):
         for k in range(0, nVertLevels):
             z = refZMid[k]
 
-            temperature[0, iCell, k] \
-                = Tx * x + Ty * y + Tz * z
-            salinity[0, iCell, k] \
-                = Sx * x + Sy * y + Sz * z
-            tracer1[0, iCell, k] \
-                = 1.0 + np.exp(
-                    -((y - y0) / yr)**2
-                    - ((z - z0) / zr)**2)
+            temperature[0, iCell, k] = 10.0
+            salinity[0, iCell, k] = 35.0
+            tracer1[0, iCell, k] = 1.0
             tracer2[0, iCell, k] = 1.0
             tracer3[0, iCell, k] = 1.0
 
-        tracer2[0, iCell, 10:20] = int(2 + np.cos(y * 4 * 2 * np.pi / Ly))
-
-        if ((y > Ly / 4) & (y < Ly / 2)) | (y > 3 * Ly / 4):
-            tracer3[0, iCell, 0:20] = 2.0
-
-    # Normalize T&S:
-    temperature[:] += Tmin - np.min(temperature[:])
-    salinity[:] += Smin - np.min(salinity[:])
-    print(
-        'Temperature ranges from ', np.min(
-            temperature[:]), ' to ', np.max(
-            temperature[:]))
-    print(
-        'Salinity ranges from ', np.min(
-            salinity[:]), ' to ', np.max(
-            salinity[:]))
 # }}}
 
 def velocity_init(ds):
@@ -182,16 +160,20 @@ def velocity_init(ds):
     normalVelocity = ds.createVariable(
         'normalVelocity', np.float64, ('Time', 'nEdges', 'nVertLevels',))
     normalVelocity[:] = 0.0
+    ssh = ds.createVariable(
+        'ssh', np.float64, ('Time', 'nCells', 'nVertLevels',))
+    ssh[:] = 0.0
 # }}}
 
 def coriolis_init(ds):
     # {{{
+    fAll = 1e-4
     fEdge = ds.createVariable('fEdge', np.float64, ('nEdges',))
-    fEdge[:] = 0.0
+    fEdge[:] = fAll
     fVertex = ds.createVariable('fVertex', np.float64, ('nVertices',))
-    fVertex[:] = 0.0
+    fVertex[:] = fAll
     fCell = ds.createVariable('fCell', np.float64, ('nCells',))
-    fCell[:] = 0.0
+    fCell[:] = fAll
 # }}}
 
 def others_init(ds):
