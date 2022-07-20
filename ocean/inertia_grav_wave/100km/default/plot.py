@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 
-varNames = ['temperature', 'salinity', 'tracer1', 'tracer2', 'tracer3']
+varNames = ['velocityX', 'velocityY', 'layerThickness']
 nRow = len(varNames)
-iTime = [0, 6, 12]
+iTime = [0, 12, 24]
 nCol = len(iTime)
 
 fig = plt.gcf()
@@ -26,33 +26,39 @@ ncfile = Dataset('output.nc', 'r')
 ncfileIC = Dataset('../initial_state/initial_state.nc', 'r')
 yMinkm = min(ncfile.variables['yCell']) / 1.0e3
 yMaxkm = max(ncfile.variables['yCell']) / 1.0e3
-zMin = 0.0
-zMax = max(ncfile.variables['refBottomDepth'])
 
 xtime = ncfile.variables['xtime']
+xCell = ncfile.variables['xCell']
+yCell = ncfile.variables['yCell']
 
 # title at top:
 # MPAS-O Test: Southern Ocean basin, 3000km x 4800m, cells:  40km x 100m
 # Only Redi diffusion is on. All other tendencies are off. Nonlinear EOS.
 # slope: 0.01
 
-titleTxt = [', initial', ', 6 months', ', 1 year']
+titleTxt = [', initial', ', time 1', ', time 2']
 for iRow in range(nRow):
-    var = ncfile.variables[varNames[iRow]]
+    var = np.squeeze(ncfile.variables[varNames[iRow]])
     for iCol in range(nCol):
+        #print('plotting: '+varNames[iRow] + titleTxt[iCol])
+        #print(' min: ',np.min(var[iTime[iCol], :]), ' max: ',np.max(var[iTime[iCol], :]))
+        #print(var[iTime[iCol], 1:50])
         plt.subplot(nRow, nCol, iRow * nCol + iCol + 1)
-        varSliced = np.transpose(var[iTime[iCol], ::4, :])
-        varMasked = ma.masked_where(varSliced < -1.0e33, varSliced)
-        ax = plt.imshow(varMasked)  # ,extent=[yMinkm,yMaxkm,zMin,zMax])
-        plt.axis('off')
+        #print('np.shape(var)',np.shape(var))
+        plt.scatter(xCell[:]/1e3,yCell[:]/1e3,s=5,c=var[iTime[iCol], :],marker='h')
+        plt.clim(min(var[iTime[iCol], :]),np.max(var[iTime[iCol], :]))
+        #varSliced = np.transpose(var[iTime[iCol], :, :])
+        #varMasked = ma.masked_where(varSliced < -1.0e33, varSliced)
+        #ax = plt.imshow(varMasked)  # ,extent=[yMinkm,yMaxkm,zMin,zMax])
+        #plt.axis('off')
         plt.title(varNames[iRow] + titleTxt[iCol])
         plt.jet()
         if iRow == nRow - 1:
             plt.xlabel('x, km')
         if iCol == 0:
-            plt.ylabel('z, m')
+            plt.ylabel('y, km')
         plt.colorbar()
 
 ncfile.close()
 ncfileIC.close()
-plt.savefig('output.png')
+plt.savefig('Output.png')

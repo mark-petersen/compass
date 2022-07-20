@@ -49,8 +49,6 @@ def vertical_init(ds):
     bottomDepth = ds.createVariable('bottomDepth', np.float64, ('nCells',))
     bottomDepthObserved = ds.createVariable(
         'bottomDepthObserved', np.float64, ('nCells',))
-    layerThickness = ds.createVariable(
-        'layerThickness', np.float64, ('Time', 'nCells', 'nVertLevels',))
     restingThickness = ds.createVariable(
         'restingThickness', np.float64, ('nCells', 'nVertLevels',))
     vertCoordMovementWeights = ds.createVariable(
@@ -93,7 +91,7 @@ def vertical_init(ds):
     maxLevelCell[:] = nVertLevels
     bottomDepth[:] = refBottomDepth[nVertLevels - 1]
     for k in range(nVertLevels):
-        layerThickness[0, :, k] = refLayerThickness[k]
+        #layerThickness[0, :, k] = refLayerThickness[k]
         restingThickness[:, k] = refLayerThickness[k]
     for iCell in range(0, nCells):
         x = xCell[iCell]
@@ -106,24 +104,6 @@ def vertical_init(ds):
 # }}}
 
 def tracer_init(ds):
-    slope = 0.001
-    # temperature: linear, match slope
-    Tmin = 5.0
-    Tx = 0.0
-    Ty = 15.0 / Ly
-    Tz = Ty / slope
-
-    # salinity: linear, match slope
-    Smin = 15.0
-    Sx = 0.0
-    Sy = 15.0 / Ly
-    Sz = Sy / slope
-
-    # tracer1: Gaussian
-    y0 = Ly / 2
-    yr = Ly / 4
-    z0 = -Lz / 3
-    zr = Lz / 4
 # {{{
 
     # create new variables # {{{
@@ -173,13 +153,13 @@ def velocity_init(ds):
     yEdge = ds.variables['yEdge']
     angleEdge = ds.variables['angleEdge']
     # }}}
-    Dc = 100.0e3 # 100km grid cell width
-    nx = 20
+    Dc = 1.0e3 # 100km grid cell width
+    nx = 40
     ny = nx
 
     g = 10.0
     f0 = 1e-4
-    H = 1000.0 
+    H = Lz # 5000.0 
 
     c = np.sqrt(g*H) #= 100 m s^(-1), 
     Lx = nx*Dc
@@ -197,7 +177,8 @@ def velocity_init(ds):
     normalVelocity[:] = 0.0
     ssh = ds.createVariable(
         'ssh', np.float64, ('Time', 'nCells', ))
-    ssh[:] = 0.0
+    layerThickness = ds.createVariable(
+        'layerThickness', np.float64, ('Time', 'nCells', 'nVertLevels',))
 
     print('velocity_init(ds) cell loop')
     time = 0.0
@@ -206,6 +187,7 @@ def velocity_init(ds):
         y = yCell[iCell]
         for k in range(0, nVertLevels):
             ssh[0, iCell] = omega*np.cos(kx*x + ky*y - omega*time)
+            layerThickness[0, iCell, k] = Lz + ssh[0, iCell]
 
     print('velocity_init(ds) edge loop')
 
