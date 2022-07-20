@@ -14,8 +14,8 @@ matplotlib.use('Agg')
 varNames = ['layerThickness']
 
 nVars = len(varNames)
-timeArray = [0, 12, 24]
-nTimes = len(timeArray)
+timeArray = [2,3,4]
+nTime = len(timeArray)
 
 fig = plt.gcf()
 fig.set_size_inches(12.0, 10.0)
@@ -25,17 +25,19 @@ fig.set_size_inches(12.0, 10.0)
 # ny=dsMesh.getncattr('ny')
 # dsMesh.close()
 
+print('read output')
 ds = Dataset('output.nc', 'r')
-yMinkm = min(ds.variables['yCell']) / 1.0e3
-yMaxkm = max(ds.variables['yCell']) / 1.0e3
+#yMinkm = min(ds.variables['yCell']) / 1.0e3
+#yMaxkm = max(ds.variables['yCell']) / 1.0e3
 
 xtime = ds.variables['xtime']
 # exact solution
 
+print('compute exact solution')
 # obtain dimensions and mesh variables
 nCells = len(ds.dimensions['nCells'])
-xCell = ds.variables['xCell']
-yCell = ds.variables['yCell']
+xCell = ds.variables['xCell'][:]
+yCell = ds.variables['yCell'][:]
 nEdges = len(ds.dimensions['nEdges'])
 xEdge = ds.variables['xEdge']
 yEdge = ds.variables['yEdge']
@@ -45,7 +47,7 @@ Dc = 1.0e3  # 100km grid cell width
 nx = 40
 ny = nx
 
-g = 10.0
+g = 9.80616
 f0 = 1e-4
 Lz = 1000.0
 nVertLevels = 1
@@ -58,11 +60,12 @@ kx = 1 * 2 * np.pi / Lx
 ky = 2 * 2 * np.pi / Ly
 omega = np.sqrt(g * H * (kx ** 2 + ky ** 2) + f0 ** 2)
 
-normalVelocity = ds.variables('normalVelocity')
-ssh = ds.variables('ssh')
-layerThickness = ds.variables('layerThickness')
-daysSinceStartOfSim = ds.variables('daysSinceStartOfSim')
+ssh = ds.variables['ssh'][:]
+#layerThickness = ds.variables['layerThickness']
+#normalVelocity = ds.variables['normalVelocity'][:]
+daysSinceStartOfSim = ds.variables['daysSinceStartOfSim'][:]
 timeSec = daysSinceStartOfSim * 86400.0
+ds.close()
 
 sshSol = np.zeros((nTime, nCells))
 # sshDif = np.zeros((nTime,nCells))
@@ -73,7 +76,7 @@ for iRow in range(nTime):
 
     for iCell in range(0, nCells):
         for k in range(0, nVertLevels):
-            sshSol[0, iCell] = omega * np.cos(kx * xCell[iCell] + ky * yCell[iCell] - omega * time)
+            sshSol[iRow, iCell] = omega * np.cos(kx * xCell[iCell] + ky * yCell[iCell] - omega * time)
             # layerThickness[0, iCell, k] = Lz + ssh[0, iCell]
 
 #    coef = omega*g/(omega**2 - f0**2)
@@ -91,24 +94,26 @@ for iRow in range(nTime):
 # MPAS-O Test: Southern Ocean basin, 3000km x 4800m, cells:  40km x 100m
 # Only Redi diffusion is on. All other tendencies are off. Nonlinear EOS.
 # slope: 0.01
-
+print('create plot')
 titleTxt = [', initial', ', time 1', ', time 2']
 colTxt = ['model', 'solution', 'model-sol']
-for iRow in range(nTimes):
-    for iCol in range(3):
+nCol = 3
+nRow = nTime
+for iRow in range(nRow):
+    iTime = timeArray[iRow]
+    for iCol in range(nCol):
         if iCol == 0:
-            var = np.squeeze(ssh[timeArray[iRow], :, 0])
+            var = np.squeeze(ssh[iTime, :])
         elif iCol == 1:
-            var = np.squeeze(sshSol[iRow, :, 0])
+            var = np.squeeze(sshSol[iRow, :])
         else:
-            var = np.squeeze(ssh[timeArray[iRow], :, 0] - sshSol[iRow, :, 0])
-        iCol = 1
-        plt.subplot(nVars, nTimes, iRow * nTimes + iCol + 1)
+            var = np.squeeze(ssh[iTime, :] - sshSol[iRow, :])
+        plt.subplot(nCol, nRow, iRow * nRow + iCol + 1)
         plt.scatter(xCell[:] / 1e3, yCell[:] / 1e3, s=5, c=var, marker='h')
         plt.clim(np.min(var), np.max(var))
-        plt.title('ssh' + ' ' + colTxt[iCol] + ' t=' + str(daysSinceStartOfSim / 24) + 'h')
+        plt.title('ssh' + ' ' + colTxt[iCol] + ' t=' + str(round(daysSinceStartOfSim[iTime] *24*60,3)) + 'm')
         plt.jet()
-        if iRow == nVars - 1:
+        if iRow == nRow - 1:
             plt.xlabel('x, km')
         if iCol == 0:
             plt.ylabel('y, km')
@@ -123,5 +128,5 @@ for iRow in range(nTimes):
         # ax = plt.imshow(varMasked)  # ,extent=[yMinkm,yMaxkm,zMin,zMax])
         # plt.axis('off')
 
-ds.close()
-plt.savefig('Output.png')
+print('save plot')
+plt.savefig('Compare_model_sol.png')

@@ -24,12 +24,12 @@ def main():
     vertical_init(ds)
     print('velocity_init(ds)')
     velocity_init(ds)
-    #print('tracer_init(ds)')
-    #tracer_init(ds)
-    #print('coriolis_init(ds)')
-    #coriolis_init(ds)
-    #print('others_init(ds)')
-    #others_init(ds)
+    print('tracer_init(ds)')
+    tracer_init(ds)
+    print('coriolis_init(ds)')
+    coriolis_init(ds)
+    print('others_init(ds)')
+    others_init(ds)
 
     ds.close()
 # }}}
@@ -157,7 +157,7 @@ def velocity_init(ds):
     nx = 40
     ny = nx
 
-    g = 10.0
+    g = 9.80616
     f0 = 1e-4
     H = Lz # 1000.0 
 
