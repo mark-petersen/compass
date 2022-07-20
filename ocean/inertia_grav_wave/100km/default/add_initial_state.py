@@ -159,7 +159,7 @@ def velocity_init(ds):
 
     g = 10.0
     f0 = 1e-4
-    H = Lz # 5000.0 
+    H = Lz # 1000.0 
 
     c = np.sqrt(g*H) #= 100 m s^(-1), 
     Lx = nx*Dc
