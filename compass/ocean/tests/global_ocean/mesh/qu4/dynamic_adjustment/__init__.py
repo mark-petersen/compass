@@ -3,10 +3,10 @@ from compass.ocean.tests.global_ocean.dynamic_adjustment import \
 from compass.ocean.tests.global_ocean.forward import ForwardStep
 
 
-class QU60DynamicAdjustment(DynamicAdjustment):
+class QU4DynamicAdjustment(DynamicAdjustment):
     """
     A test case performing dynamic adjustment (dissipating fast-moving waves)
-    from an initial condition on the QU60 MPAS-Ocean mesh
+    from an initial condition on the QU4 MPAS-Ocean mesh
     """
 
     def __init__(self, test_group, mesh, init, time_integrator):
