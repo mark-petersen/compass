@@ -62,6 +62,9 @@ class Mesh(TestCase):
         elif mesh_name in ['QU240', 'QUwISC240']:
             base_mesh_step = QuasiUniformSphericalMeshStep(
                 self, name=name, subdir=subdir, cell_width=240)
+        elif mesh_name in ['QU60']:
+            base_mesh_step = QuasiUniformSphericalMeshStep(
+                self, name=name, subdir=subdir, cell_width=60)
         elif mesh_name in ['EC30to60', 'ECwISC30to60']:
             base_mesh_step = EC30to60BaseMesh(self, name=name, subdir=subdir)
         elif mesh_name in ['ARRM10to60']:

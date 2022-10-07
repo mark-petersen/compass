@@ -134,7 +134,7 @@ class GlobalOcean(TestGroup):
                     time_integrator=time_integrator))
 
         # for other meshes, we do fewer tests
-        for mesh_name in ['EC30to60', 'ECwISC30to60']:
+        for mesh_name in ['EC30to60', 'ECwISC30to60','QU60']:
             mesh = Mesh(test_group=self, mesh_name=mesh_name)
             self.add_test_case(mesh)
 
