@@ -85,7 +85,7 @@ class WC14BaseMesh(QuasiUniformSphericalMeshStep):
         plotFrame = 3
 
         # global settings for regionally refines mesh
-        highRes = 14.0  # [km]
+        highRes = 8.0  # [km]
 
         fileName = 'region_Central_America'
         transitionWidth = 800.0 * km
