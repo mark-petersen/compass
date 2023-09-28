@@ -143,11 +143,14 @@ class SphericalBaseStep(Step):
                                     'cell_width_image_filename')
         register_sci_viz_colormaps()
         fig = plt.figure(figsize=[16.0, 8.0])
-        ax = plt.axes(projection=ccrs.PlateCarree())
+        ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=-120.0))
         ax.set_global()
+        min_width = np.amin(cell_width)
+        max_width = np.amax(cell_width)
         im = ax.imshow(cell_width, origin='lower',
                        transform=ccrs.PlateCarree(),
-                       extent=[-180, 180, -90, 90], cmap=cmap, zorder=0)
+                       extent=[-180, 180, -90, 90], cmap=cmap, zorder=0,
+                       vmin=round(min_width), vmax=round(max_width))
         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
         gl = ax.gridlines(
             crs=ccrs.PlateCarree(),
@@ -158,11 +161,11 @@ class SphericalBaseStep(Step):
             linestyle='-', zorder=2)
         gl.top_labels = False
         gl.right_labels = False
-        min_width = np.amin(cell_width)
-        max_width = np.amax(cell_width)
         plt.title(
             f'Grid cell size, km, min: {min_width:.1f} max: {max_width:.1f}')
-        plt.colorbar(im, shrink=.60)
+        evenTicks = np.arange(2*(int(min_width/2.0)+1), max_width, 2)
+        Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
+        cbar = plt.colorbar(im, shrink=.75, ticks = Ticks)
         fig.canvas.draw()
         plt.tight_layout()
         plt.savefig(image_filename, bbox_inches='tight')

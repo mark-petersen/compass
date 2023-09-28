@@ -1,4 +1,4 @@
-config_time_integrator = 'split_explicit'
+config_time_integrator = 'split_explicit_ab2'
 config_dt = '00:01:00'
 config_btr_dt = '00:00:03'
 config_run_duration = '0000_01:00:00'
@@ -6,4 +6,5 @@ config_write_output_on_startup = false.
 config_mom_del2 = 400
 config_mom_del4 = 7.7e9
 config_hmix_scaleWithMesh = .true.
-config_use_GM = .true.
+config_use_GM = .false.
+config_use_Redi = .false.
