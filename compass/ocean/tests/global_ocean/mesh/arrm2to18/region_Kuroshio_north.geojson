@@ -1,0 +1,97 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "region for Kuroshio high-resolution extension.",
+        "component": "ocean",
+        "object": "region",
+        "author": "Mark Petersen"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              180,
+              63.13065289545733
+            ],
+            [
+              145,
+              66.68404204726374
+            ],
+            [
+              145,
+              49.4430436165994
+            ],
+            [
+              137.9711358743379,
+              35.10826304399497
+            ],
+            [
+              140.25515672341493,
+              34.08991184417455
+            ],
+            [
+              155,
+              38.609769006154295
+            ],
+            [
+              180,
+              47.61564066732916
+            ],
+            [
+              180,
+              54
+            ],
+            [
+              180,
+              63.13065289545733
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "region for Kuroshio high-resolution extension.",
+        "component": "ocean",
+        "object": "region",
+        "author": "Mark Petersen"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -180,
+              63.23249251146339
+            ],
+            [
+              -180,
+              47.583177514652135
+            ],
+            [
+              -162.31077176409264,
+              48
+            ],
+            [
+              -119.90813910042607,
+              59.37676224092212
+            ],
+            [
+              -123.56353846798353,
+              69.54054163965858
+            ],
+            [
+              -180,
+              63.23249251146339
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -4,7 +4,7 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "region for CUSP mesh",
+        "name": "mask of Pacific along central America for sharp transition across land from Gulf of Mexico to Pacific",
         "component": "ocean",
         "object": "region",
         "author": "Mark Petersen"
