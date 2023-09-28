@@ -76,8 +76,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         register_sci_viz_colormaps()
 
         # global settings for regionally-refined mesh
-        highRes = 30.0  # [km]
-        lowRes = 120.0  # [km]
+        highRes = 15.0  # [km]
+        lowRes = 60.0  # [km]
 
         # Create cell width vs latitude for Atlantic and Pacific basins
         QU = lowRes*np.ones(lat.size)
@@ -94,16 +94,17 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         _plot_cartopy(2, 'QU', cellWidth, '3Wbgy5')
         plotFrame = 3
 
-        fileName = 'region_Central_America'
-        transitionWidth = 800.0 * km
-        transitionOffset = 0.0
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        cellWidth = 30.0 * mask + cellWidth * (1 - mask)
+# mrp deleted because of strange line at Pacific 5N.
+        #fileName = 'region_Central_America'
+        #transitionWidth = 800.0 * km
+        #transitionOffset = 0.0
+        #fc = read_feature_collection('{}.geojson'.format(fileName))
+        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                              earth_radius,
+        #                                              max_length=0.25)
+        #mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                          (transitionWidth / 2.)))
+        #cellWidth = 30.0 * mask + cellWidth * (1 - mask)
 
         fileName = 'coastline_CUSP'
         distanceToTransition = 600.0 * km
