@@ -76,9 +76,9 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         register_sci_viz_colormaps()
 
         # global settings for regionally-refined mesh
-        highRes = 3.0  # [km]
-        lowRes = 18.0  # [km]
-        RRShighRes = 6.0
+        highRes = 2.5  # [km]
+        lowRes = 25.0  # [km]
+        RRShighRes = 10.0
 
         #highRes = 2.0  # [km]
         #lowRes = 18.0  # [km]
@@ -92,8 +92,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         # Expand from 1D to 2D
 # pick one of these:
-        _, cellWidth = np.meshgrid(lon, RRS6to18)
-#        _, cellWidth = np.meshgrid(lon, QU)
+#        _, cellWidth = np.meshgrid(lon, RRS6to18)
+        _, cellWidth = np.meshgrid(lon, QU)
 
         _, cellWidthRRS1to18 = np.meshgrid(lon, RRS1to18)
         _plot_cartopy(2, 'RRS6to18', cellWidth, '3Wbgy5')
