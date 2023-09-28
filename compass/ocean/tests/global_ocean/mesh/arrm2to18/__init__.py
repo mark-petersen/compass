@@ -86,13 +86,14 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         #EC60to30Narrow = mdt.EC_CellWidthVsLat(lat, latPosEq=8.0,
         #                                       latWidthEq=3.0)
 
+        QU = lowRes*np.ones(lat.size)
         RRS6to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, RRShighRes)
         RRS1to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, highRes)
 
         # Expand from 1D to 2D
 # pick one of these:
-        _, cellWidth = np.meshgrid(lon, RRS6to18)
-#        _, cellWidth = np.meshgrid(lon, QU)
+#        _, cellWidth = np.meshgrid(lon, RRS6to18)
+        _, cellWidth = np.meshgrid(lon, QU)
 
         _, cellWidthRRS1to18 = np.meshgrid(lon, RRS1to18)
         _plot_cartopy(2, 'RRS6to18', cellWidth, '3Wbgy5')
