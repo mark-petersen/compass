@@ -89,19 +89,16 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         #EC60to30Narrow = mdt.EC_CellWidthVsLat(lat, latPosEq=8.0,
         #                                       latWidthEq=3.0)
 
-# use this later
-#        RRS6to18 = mdt.RRS_CellWidthVsLat(lat, 18, 6)
+        RRS6to18 = mdt.RRS_CellWidthVsLat(lat, 18, 6)
         RRS1to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, highRes)
-        print('RRS1to18',RRS1to18)
-        print('RRS1to18 max',RRS1to18.max())
-        RRS1to18[RRS1to18<highRes] = highRes
-        print('RRS1to18 >2',RRS1to18)
 
         # Expand from 1D to 2D
-        _, cellWidth = np.meshgrid(lon, QU)
+# pick one of these:
+        _, cellWidth = np.meshgrid(lon, RRS6to18)
+#        _, cellWidth = np.meshgrid(lon, QU)
+
         _, cellWidthRRS1to18 = np.meshgrid(lon, RRS1to18)
-        #_plot_cartopy(2, 'QU', cellWidth, '3Wbgy5')
-        _plot_cartopy(2, 'RRS', cellWidthRRS1to18, '3Wbgy5')
+        _plot_cartopy(2, 'RRS6to18', cellWidth, '3Wbgy5')
         plotFrame = 3
 
         fileName = 'coastline_CUSP'
