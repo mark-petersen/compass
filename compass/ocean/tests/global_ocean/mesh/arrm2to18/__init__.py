@@ -76,8 +76,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         register_sci_viz_colormaps()
 
         # global settings for regionally-refined mesh
-        highRes = 15.0  # [km]
-        lowRes = 60.0  # [km]
+        highRes = 2.0  # [km]
+        lowRes = 18.0  # [km]
 
         # Create cell width vs latitude for Atlantic and Pacific basins
         QU = lowRes*np.ones(lat.size)
@@ -88,10 +88,17 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 
 # use this later
 #        RRS6to18 = mdt.RRS_CellWidthVsLat(lat, 18, 6)
+        RRS1to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, highRes)
+        print('RRS1to18',RRS1to18)
+        print('RRS1to18 max',RRS1to18.max())
+        RRS1to18[RRS1to18<highRes] = highRes
+        print('RRS1to18 >2',RRS1to18)
 
         # Expand from 1D to 2D
         _, cellWidth = np.meshgrid(lon, QU)
-        _plot_cartopy(2, 'QU', cellWidth, '3Wbgy5')
+        _, cellWidthRRS1to18 = np.meshgrid(lon, RRS1to18)
+        #_plot_cartopy(2, 'QU', cellWidth, '3Wbgy5')
+        _plot_cartopy(2, 'RRS', cellWidthRRS1to18, '3Wbgy5')
         plotFrame = 3
 
 # mrp deleted because of strange line at Pacific 5N.
@@ -118,7 +125,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        cellWidth = highRes * mask + cellWidth * (1 - mask)
+        cellWidth = cellWidthRRS1to18 * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
@@ -139,7 +146,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                       max_length=0.25)
         landMask = 0.5 * (1 + np.sign(-signedDistance))
         mask = maskSharp * landMask + maskSmooth * (1 - landMask)
-        cellWidth = highRes * mask + cellWidth * (1 - mask)
+        cellWidth = cellWidthRRS1to18 * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
