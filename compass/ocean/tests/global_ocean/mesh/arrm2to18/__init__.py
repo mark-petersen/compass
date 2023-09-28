@@ -14,9 +14,9 @@ from mpas_tools.viz.colormaps import register_sci_viz_colormaps
 from compass.mesh import QuasiUniformSphericalMeshStep
 
 
-class WC14BaseMesh(QuasiUniformSphericalMeshStep):
+class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
     """
-    A step for creating WC14 mesh
+    A step for creating ARRM2to18 mesh
     """
     def setup(self):
         """
@@ -75,18 +75,24 @@ class WC14BaseMesh(QuasiUniformSphericalMeshStep):
         fig.set_size_inches(10.0, 14.0)
         register_sci_viz_colormaps()
 
+        # global settings for regionally-refined mesh
+        highRes = 30.0  # [km]
+        lowRes = 120.0  # [km]
+
         # Create cell width vs latitude for Atlantic and Pacific basins
-        EC60to30 = mdt.EC_CellWidthVsLat(lat)
-        EC60to30Narrow = mdt.EC_CellWidthVsLat(lat, latPosEq=8.0,
-                                               latWidthEq=3.0)
+        QU = lowRes*np.ones(lat.size)
+        # delete soon
+        #EC60to30 = mdt.EC_CellWidthVsLat(lat)
+        #EC60to30Narrow = mdt.EC_CellWidthVsLat(lat, latPosEq=8.0,
+        #                                       latWidthEq=3.0)
+
+# use this later
+#        RRS6to18 = mdt.RRS_CellWidthVsLat(lat, 18, 6)
 
         # Expand from 1D to 2D
-        _, cellWidth = np.meshgrid(lon, EC60to30Narrow)
-        _plot_cartopy(2, 'narrow EC60to30', cellWidth, '3Wbgy5')
+        _, cellWidth = np.meshgrid(lon, QU)
+        _plot_cartopy(2, 'QU', cellWidth, '3Wbgy5')
         plotFrame = 3
-
-        # global settings for regionally refines mesh
-        highRes = 14.0  # [km]
 
         fileName = 'region_Central_America'
         transitionWidth = 800.0 * km
@@ -193,8 +199,8 @@ class WC14BaseMesh(QuasiUniformSphericalMeshStep):
         plotFrame += 2
 
         ax = plt.subplot(6, 2, 1)
-        ax.plot(lat, EC60to30, label='original EC60to30')
-        ax.plot(lat, EC60to30Narrow, label='narrow EC60to30')
+        ax.plot(lat, QU, label='original QU')
+# mrp del soon        ax.plot(lat, EC60to30Narrow, label='narrow EC60to30')
         ax.grid(True)
         plt.title('Grid cell size [km] versus latitude')
         plt.legend(loc="upper left")
