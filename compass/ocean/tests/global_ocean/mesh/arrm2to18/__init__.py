@@ -77,7 +77,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         # global settings for regionally-refined mesh
         highRes = 3.0  # [km]
-        lowRes = 25.0  # [km]
+        lowRes = 18.0  # [km]
         RRShighRes = 10.0
 
         #highRes = 2.0  # [km]
