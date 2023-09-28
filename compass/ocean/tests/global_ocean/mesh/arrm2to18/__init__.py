@@ -76,7 +76,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         register_sci_viz_colormaps()
 
         # global settings for regionally-refined mesh
-        highRes = 2.5  # [km]
+        highRes = 2.0  # [km]
         lowRes = 25.0  # [km]
         RRShighRes = 10.0
 
