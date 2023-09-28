@@ -76,20 +76,17 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         register_sci_viz_colormaps()
 
         # global settings for regionally-refined mesh
-        #highRes = 3.0  # [km]
-        #lowRes = 25.0  # [km]
+        highRes = 3.0  # [km]
+        lowRes = 25.0  # [km]
+        RRShighRes = 10.0
 
-        highRes = 2.0  # [km]
-        lowRes = 18.0  # [km]
-
-        # Create cell width vs latitude for Atlantic and Pacific basins
-        QU = lowRes*np.ones(lat.size)
-        # delete soon
-        #EC60to30 = mdt.EC_CellWidthVsLat(lat)
+        #highRes = 2.0  # [km]
+        #lowRes = 18.0  # [km]
+        #RRShighRes = 6.0
         #EC60to30Narrow = mdt.EC_CellWidthVsLat(lat, latPosEq=8.0,
         #                                       latWidthEq=3.0)
 
-        RRS6to18 = mdt.RRS_CellWidthVsLat(lat, 18, 6)
+        RRS6to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, RRShighRes)
         RRS1to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, highRes)
 
         # Expand from 1D to 2D
@@ -195,7 +192,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         plotFrame += 2
 
         ax = plt.subplot(6, 2, 1)
-        ax.plot(lat, QU, label='original QU')
+        ax.plot(lat, RRS6to18, label='original RRS')
+        #ax.plot(lat, QU, label='original QU')
 # mrp del soon        ax.plot(lat, EC60to30Narrow, label='narrow EC60to30')
         ax.grid(True)
         plt.title('Grid cell size [km] versus latitude')
