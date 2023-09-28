@@ -1,0 +1,18 @@
+<streams>
+
+<immutable_stream name="mesh"
+        io_type="pnetcdf,cdf5"/>
+
+<immutable_stream name="input"
+        io_type="pnetcdf,cdf5"/>
+
+<stream name="forcing_data"
+        io_type="pnetcdf,cdf5"/>
+
+<immutable_stream name="restart"
+        io_type="pnetcdf,cdf5"/>
+
+<stream name="output"
+        io_type="pnetcdf,cdf5"/>
+
+</streams>

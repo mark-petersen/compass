@@ -143,11 +143,14 @@ class SphericalBaseStep(Step):
                                     'cell_width_image_filename')
         register_sci_viz_colormaps()
         plt.figure(figsize=[16.0, 8.0])
-        ax = plt.axes(projection=ccrs.PlateCarree())
+        ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=-120.0))
         ax.set_global()
+        min_width = np.amin(cell_width)
+        max_width = np.amax(cell_width)
         im = ax.imshow(cell_width, origin='lower',
                        transform=ccrs.PlateCarree(),
-                       extent=[-180, 180, -90, 90], cmap=cmap, zorder=0)
+                       extent=[-180, 180, -90, 90], cmap=cmap, zorder=0,
+                       vmin=round(min_width), vmax=round(max_width))
         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
         # only request the labels we want.  Creating the top and right labels
         # and then hiding them confuses cartopy's title placement, leading to
@@ -165,6 +168,17 @@ class SphericalBaseStep(Step):
             f'Grid cell size, km, min: {min_width:.1f} max: {max_width:.1f}')
         plt.colorbar(im, shrink=.60)
         # no tight_layout() here: bbox_inches='tight' already crops the figure
+# from mrp rebase, old code commented out:
+#        gl.top_labels = False
+#        gl.right_labels = False
+#        plt.title(
+#            f'Grid cell size, km, min: {min_width:.1f} max: {max_width:.1f}')
+#        evenTicks = np.arange(2*(int(min_width/2.0)+1), max_width, 2)
+#        Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
+#        cbar = plt.colorbar(im, shrink=.75, ticks = Ticks)
+#        fig.canvas.draw()
+#        plt.tight_layout()
+#>>>>>>> 8d5a5217d (All changes Sep-Dec 2022 ARRM)
         plt.savefig(image_filename, bbox_inches='tight')
         plt.close()
 
