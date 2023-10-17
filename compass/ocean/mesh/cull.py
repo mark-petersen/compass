@@ -272,131 +272,132 @@ def _cull_mesh_with_logging(logger, with_cavities, with_critical_passages,
 
     has_remapped_topo = os.path.exists('topography.nc')
 
-    if has_remapped_topo:
-        _land_mask_from_topo(with_cavities,
-                             topo_filename='topography.nc',
-                             mask_filename='land_mask.nc')
-    else:
-        _land_mask_from_geojson(with_cavities=with_cavities,
-                                process_count=process_count,
-                                logger=logger,
-                                mesh_filename='base_mesh.nc',
-                                geojson_filename='land_coverage.geojson',
-                                mask_filename='land_mask.nc')
+#    if has_remapped_topo:
+#        _land_mask_from_topo(with_cavities,
+#                             topo_filename='topography.nc',
+#                             mask_filename='land_mask.nc')
+#    else:
+#        _land_mask_from_geojson(with_cavities=with_cavities,
+#                                process_count=process_count,
+#                                logger=logger,
+#                                mesh_filename='base_mesh.nc',
+#                                geojson_filename='land_coverage.geojson',
+#                                mask_filename='land_mask.nc')
 
     dsBaseMesh = xr.open_dataset('base_mesh.nc')
-    dsLandMask = xr.open_dataset('land_mask.nc')
-    dsLandMask = add_land_locked_cells_to_mask(dsLandMask, dsBaseMesh,
-                                               latitude_threshold=43.0,
-                                               nSweeps=20)
-    write_netcdf(dsLandMask, 'land_mask_with_land_locked_cells.nc')
-
-    # create seed points for a flood fill of the ocean
-    # use all points in the ocean directory, on the assumption that they are,
-    # in fact, in the ocean
-    fcSeed = gf.read(componentName='ocean', objectType='point',
-                     tags=['seed_point'])
-
-    if land_blockages:
-        if with_critical_passages:
-            # merge transects for critical land blockages into
-            # critical_land_blockages.geojson
-            fcCritBlockages = gf.read(
-                componentName='ocean', objectType='transect',
-                tags=['Critical_Land_Blockage'])
-        else:
-            fcCritBlockages = FeatureCollection()
-
-        if custom_land_blockages is not None:
-            fcCritBlockages.merge(read_feature_collection(
-                custom_land_blockages))
-
-        # create masks from the transects
-        fcCritBlockages.to_geojson('critical_blockages.geojson')
-        args = ['compute_mpas_transect_masks',
-                '-m', 'base_mesh.nc',
-                '-g', 'critical_blockages.geojson',
-                '-o', 'critical_blockages.nc',
-                '-t', 'cell',
-                '-s', '10e3',
-                '--process_count', f'{process_count}',
-                '--format', netcdf_format,
-                '--engine', netcdf_engine]
-        check_call(args, logger=logger)
-        dsCritBlockMask = xr.open_dataset('critical_blockages.nc')
-
-        dsLandMask = add_critical_land_blockages(dsLandMask, dsCritBlockMask)
-
-    fcCritPassages = FeatureCollection()
-    dsPreserve = []
-
-    if critical_passages:
-        if with_critical_passages:
-            # merge transects for critical passages into fcCritPassages
-            fcCritPassages.merge(gf.read(componentName='ocean',
-                                         objectType='transect',
-                                         tags=['Critical_Passage']))
-
-        if custom_critical_passages is not None:
-            fcCritPassages.merge(read_feature_collection(
-                custom_critical_passages))
-
-        # create masks from the transects
-        fcCritPassages.to_geojson('critical_passages.geojson')
-        args = ['compute_mpas_transect_masks',
-                '-m', 'base_mesh.nc',
-                '-g', 'critical_passages.geojson',
-                '-o', 'critical_passages.nc',
-                '-t', 'cell', 'edge',
-                '-s', '10e3',
-                '--process_count', f'{process_count}',
-                '--format', netcdf_format,
-                '--engine', netcdf_engine]
-        check_call(args, logger=logger)
-        dsCritPassMask = xr.open_dataset('critical_passages.nc')
-
-        # Alter critical passages to be at least two cells wide, to avoid sea
-        # ice blockage
-        dsCritPassMask = widen_transect_edge_masks(dsCritPassMask, dsBaseMesh,
-                                                   latitude_threshold=43.0)
-
-        dsPreserve.append(dsCritPassMask)
-
-    if preserve_floodplain:
-        dsPreserve.append(dsBaseMesh)
-
-    # cull the mesh based on the land mask
-    dsCulledMesh = cull(dsBaseMesh, dsMask=dsLandMask,
-                        dsPreserve=dsPreserve, logger=logger, dir='.')
-
-    # create a mask for the flood fill seed points
-    dsSeedMask = compute_mpas_flood_fill_mask(dsMesh=dsCulledMesh,
-                                              fcSeed=fcSeed,
-                                              logger=logger)
-
-    # cull the mesh a second time using a flood fill from the seed points
-    dsCulledMesh = cull(dsCulledMesh, dsInverse=dsSeedMask, logger=logger,
-                        dir='.')
-
-    # sort the cell, edge and vertex indices for better performances
-    dsCulledMesh = sort_mesh(dsCulledMesh)
-
-    out_filename = 'culled_mesh.nc'
-    if convert_to_cdf5:
-        write_filename = 'culled_mesh_before_cdf5.nc'
-        write_netcdf(dsCulledMesh, write_filename)
-        args = ['ncks', '-5', write_filename, out_filename]
-        check_call(args, logger=logger)
-    else:
-        write_netcdf(dsCulledMesh, out_filename)
-
-    # we need to make the graph file after sorting
-    make_graph_file(mesh_filename='culled_mesh.nc',
-                    graph_filename='culled_graph.info')
-
+#    dsLandMask = xr.open_dataset('land_mask.nc')
+#    dsLandMask = add_land_locked_cells_to_mask(dsLandMask, dsBaseMesh,
+#                                               latitude_threshold=43.0,
+#                                               nSweeps=20)
+#    #write_netcdf(dsLandMask, 'land_mask_with_land_locked_cells.nc')
+#
+#    # create seed points for a flood fill of the ocean
+#    # use all points in the ocean directory, on the assumption that they are,
+#    # in fact, in the ocean
+#    fcSeed = gf.read(componentName='ocean', objectType='point',
+#                     tags=['seed_point'])
+#
+#    if land_blockages:
+#        if with_critical_passages:
+#            # merge transects for critical land blockages into
+#            # critical_land_blockages.geojson
+#            fcCritBlockages = gf.read(
+#                componentName='ocean', objectType='transect',
+#                tags=['Critical_Land_Blockage'])
+#        else:
+#            fcCritBlockages = FeatureCollection()
+#
+#        if custom_land_blockages is not None:
+#            fcCritBlockages.merge(read_feature_collection(
+#                custom_land_blockages))
+#
+#        # create masks from the transects
+#        fcCritBlockages.to_geojson('critical_blockages.geojson')
+#        args = ['compute_mpas_transect_masks',
+#                '-m', 'base_mesh.nc',
+#                '-g', 'critical_blockages.geojson',
+#                '-o', 'critical_blockages.nc',
+#                '-t', 'cell',
+#                '-s', '10e3',
+#                '--process_count', f'{process_count}',
+#                '--format', netcdf_format,
+#                '--engine', netcdf_engine]
+#        #check_call(args, logger=logger)
+#        dsCritBlockMask = xr.open_dataset('critical_blockages.nc')
+#
+#        dsLandMask = add_critical_land_blockages(dsLandMask, dsCritBlockMask)
+#
+#    fcCritPassages = FeatureCollection()
+#    dsPreserve = []
+#
+#    if critical_passages:
+#        if with_critical_passages:
+#            # merge transects for critical passages into fcCritPassages
+#            fcCritPassages.merge(gf.read(componentName='ocean',
+#                                         objectType='transect',
+#                                         tags=['Critical_Passage']))
+#
+#        if custom_critical_passages is not None:
+#            fcCritPassages.merge(read_feature_collection(
+#                custom_critical_passages))
+#
+#        # create masks from the transects
+#        fcCritPassages.to_geojson('critical_passages.geojson')
+#        args = ['compute_mpas_transect_masks',
+#                '-m', 'base_mesh.nc',
+#                '-g', 'critical_passages.geojson',
+#                '-o', 'critical_passages.nc',
+#                '-t', 'cell', 'edge',
+#                '-s', '10e3',
+#                '--process_count', f'{process_count}',
+#                '--format', netcdf_format,
+#                '--engine', netcdf_engine]
+#        #check_call(args, logger=logger)
+#        dsCritPassMask = xr.open_dataset('critical_passages.nc')
+#
+#        # Alter critical passages to be at least two cells wide, to avoid sea
+#        # ice blockage
+#        dsCritPassMask = widen_transect_edge_masks(dsCritPassMask, dsBaseMesh,
+#                                                   latitude_threshold=43.0)
+#
+#        dsPreserve.append(dsCritPassMask)
+#
+#    if preserve_floodplain:
+#        dsPreserve.append(dsBaseMesh)
+#
+#    # cull the mesh based on the land mask
+#    dsCulledMesh = cull(dsBaseMesh, dsMask=dsLandMask,
+#                        dsPreserve=dsPreserve, logger=logger, dir='.')
+#
+#    # create a mask for the flood fill seed points
+#    dsSeedMask = compute_mpas_flood_fill_mask(dsMesh=dsCulledMesh,
+#                                              fcSeed=fcSeed,
+#                                              logger=logger)
+#
+#    # cull the mesh a second time using a flood fill from the seed points
+#    dsCulledMesh = cull(dsCulledMesh, dsInverse=dsSeedMask, logger=logger,
+#                        dir='.')
+#
+#    # sort the cell, edge and vertex indices for better performances
+#    dsCulledMesh = sort_mesh(dsCulledMesh)
+#
+#    out_filename = 'culled_mesh.nc'
+#    if convert_to_cdf5:
+#        write_filename = 'culled_mesh_before_cdf5.nc'
+#        write_netcdf(dsCulledMesh, write_filename)
+#        args = ['ncks', '-5', write_filename, out_filename]
+#        check_call(args, logger=logger)
+#    else:
+#        print('write_netcdf(dsCulledMesh, out_filename)')
+#        #write_netcdf(dsCulledMesh, out_filename)
+#
+#    # we need to make the graph file after sorting
+#    #make_graph_file(mesh_filename='culled_mesh.nc',
+#    #                graph_filename='culled_graph.info')
+#
     if critical_passages:
         # make a new version of the critical passages mask on the culled mesh
-        fcCritPassages.to_geojson('critical_passages.geojson')
+        #fcCritPassages.to_geojson('critical_passages.geojson')
         args = ['compute_mpas_transect_masks',
                 '-m', 'culled_mesh.nc',
                 '-g', 'critical_passages.geojson',
