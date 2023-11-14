@@ -145,21 +145,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
                                                       max_length=0.25)
-        maskSmoothEast = 0.5 * (
-                    1 + np.tanh((transitionOffset - signedDistance) /
-                                (transitionWidth / 2.)))
-
-        fc = read_feature_collection('region_Bering_Sea_reduced.geojson')
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        maskSmoothWest = 0.5 * (
-                    1 + np.tanh((transitionOffset - signedDistance) /
-                                (transitionWidth / 2.)))
-
-        fc = read_feature_collection('land_mask_Kamchatka.geojson')
-        maskWest = mask_from_geojson(fc, lon, lat)
-        mask = maskSmoothWest * maskWest + maskSmoothEast * (1 - maskWest)
+        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
         cellWidth = highRes * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
