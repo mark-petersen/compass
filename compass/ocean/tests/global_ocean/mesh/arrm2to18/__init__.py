@@ -30,6 +30,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                   'region_Arctic_Ocean.geojson',
                   'region_Bering_Sea.geojson',
                   'region_Bering_Sea_reduced.geojson',
+                  'region_Kuroshio.geojson',
                   'region_Central_America.geojson',
                   'region_Gulf_of_Mexico.geojson',
                   'region_Gulf_Stream_extension.geojson']
@@ -77,7 +78,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         # global settings for regionally-refined mesh
         highRes = 2.0  # [km]
-        lowRes = 25.0  # [km]
+        lowRes = 18.0  # [km]
         RRShighRes = 10.0
 
         #highRes = 2.0  # [km]
@@ -164,7 +165,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
 
-        fileName = 'region_Arctic_Ocean'
+        fileName = 'region_Kuroshio'
         transitionOffset = 200.0 * km
         transitionWidth = 800.0 * km
         fc = read_feature_collection('{}.geojson'.format(fileName))
@@ -177,6 +178,20 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
+
+        fileName = 'region_Arctic_Ocean'
+        transitionOffset = 200.0 * km
+        transitionWidth = 800.0 * km
+        fc = read_feature_collection('{}.geojson'.format(fileName))
+        signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        cellWidth = highRes * mask + cellWidth * (1 - mask)
+        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        #plotFrame += 2
 
         fileName = 'region_Gulf_Stream_extension'
         transitionOffset = 200.0 * km
