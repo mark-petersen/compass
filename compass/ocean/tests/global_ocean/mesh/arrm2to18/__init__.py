@@ -80,6 +80,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         highRes = 2.0  # [km]
         lowRes = 18.0  # [km]
         RRShighRes = 10.0
+        transitionOffsetGlobal = 200.0 * km
+        transitionWidthGlobal = 2000.0 * km
 
         #highRes = 2.0  # [km]
         #lowRes = 18.0  # [km]
@@ -104,7 +106,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         distanceToTransition = 800.0 * km
         # transitionWidth is distance from 0.07 to 0.03 of transition within
         # tanh
-        transitionWidth = 800.0 * km
+        transitionWidth = transitionWidthGlobal
         transitionOffset = distanceToTransition + transitionWidth / 2.0
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
@@ -119,7 +121,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         fileName = 'region_Gulf_of_Mexico'
         transitionOffset = 800.0 * km
-        transitionWidth = 800.0 * km
+        transitionWidth = transitionWidthGlobal
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
@@ -139,8 +141,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         plotFrame += 2
 
         fileName = 'region_Bering_Sea'
-        transitionOffset = 200.0 * km
-        transitionWidth = 800.0 * km
+        transitionOffset = transitionOffsetGlobal
+        transitionWidth = transitionWidthGlobal
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
@@ -153,8 +155,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         plotFrame += 2
 
         fileName = 'region_Kuroshio'
-        transitionOffset = 200.0 * km
-        transitionWidth = 800.0 * km
+        transitionOffset = transitionOffsetGlobal
+        transitionWidth = transitionWidthGlobal
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
@@ -167,8 +169,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         plotFrame += 2
 
         fileName = 'region_Arctic_Ocean'
-        transitionOffset = 200.0 * km
-        transitionWidth = 800.0 * km
+        transitionOffset = transitionOffsetGlobal
+        transitionWidth = transitionWidthGlobal
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
@@ -181,8 +183,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         #plotFrame += 2
 
         fileName = 'region_Gulf_Stream_extension'
-        transitionOffset = 200.0 * km
-        transitionWidth = 1000.0 * km
+        transitionOffset = transitionOffsetGlobal
+        transitionWidth = 2000.0 * km
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
