@@ -24,14 +24,15 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
         inputs = ['coastline_CUSP.geojson',
+                  'region_CUSP_north.geojson',
+                  'region_Kuroshio_north.geojson',
                   'land_mask_Kamchatka.geojson',
                   'land_mask_Mexico.geojson',
                   'namelist.split_explicit',
                   'region_Arctic_Ocean.geojson',
                   'region_Bering_Sea.geojson',
-                  'region_Bering_Sea_reduced.geojson',
+                  'region_Mediterranean_Sea.geojson',
                   'region_Kuroshio.geojson',
-                  'region_Central_America.geojson',
                   'region_Gulf_of_Mexico.geojson',
                   'region_Gulf_Stream_extension.geojson']
         for filename in inputs:
@@ -57,7 +58,9 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
             longitude in degrees (length m and between -90 and 90)
         """
 
-        dlon = 0.1
+        # temp, use 0.5 for now: dlon = 0.1
+        #dlon = 0.1
+        dlon = 1.0
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
         print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '
@@ -77,11 +80,24 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         register_sci_viz_colormaps()
 
         # global settings for regionally-refined mesh
-        highRes = 2.0  # [km]
+        highRes = 3.0  # [km]
         lowRes = 18.0  # [km]
+        midRes =  6.0  # [km]
         RRShighRes = 10.0
-        transitionOffsetGlobal = 200.0 * km
+        #transitionOffsetGlobal = 200.0 * km
+        transitionOffsetGlobal = 0.0 * km
         transitionWidthGlobal = 2000.0 * km
+
+        # create background tanh for high-res region
+        latMid = 45.0
+        latTransitionWidth = 5.0
+        midHighAvgRes = 0.5*(midRes + highRes)
+# create 1D array as a function of latitude
+        #midToHighResTanh = midHighAvgRes + (highRes - midHighAvgRes)*np.tanh( (lat - latMid) / latTransitionWidth )
+        midToHighResTanh = 0.5 + 0.5*np.tanh( (lat - latMid) / latTransitionWidth )
+        # Expand from 1D to 2D
+        #_, cellWidthHighRes = np.meshgrid(lon, midToHighResTanh)
+        _, midToHighResMask = np.meshgrid(lon, midToHighResTanh)
 
         #highRes = 2.0  # [km]
         #lowRes = 18.0  # [km]
@@ -92,115 +108,158 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         QU = lowRes*np.ones(lat.size)
         RRS6to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, RRShighRes)
         RRS1to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, highRes)
-
         # Expand from 1D to 2D
-# pick one of these:
-#        _, cellWidth = np.meshgrid(lon, RRS6to18)
-        _, cellWidth = np.meshgrid(lon, QU)
+        _, cellWidthLowRes = np.meshgrid(lon, QU)
 
-        _, cellWidthRRS1to18 = np.meshgrid(lon, RRS1to18)
-        _plot_cartopy(2, 'RRS6to18', cellWidth, '3Wbgy5')
-        plotFrame = 3
+# start the high res mask as zeros, and add ones for the high res region
+        _, highResMask = np.meshgrid(lon, np.zeros(lat.size))
+        _, onesMask = np.meshgrid(lon, np.ones(lat.size))
+        plotFrame = 1
+
+        fileName = 'region_CUSP_north'
+        transitionWidth = 800 * km
+        transitionOffset = 400.0 * km
+        print('trying to read' + '{}.geojson'.format(fileName) )
+        fc = read_feature_collection('{}.geojson'.format(fileName))
+        signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        midToHighResMask = np.minimum(midToHighResMask + mask, onesMask)
+
+        fileName = 'region_Kuroshio_north'
+        transitionWidth = 800 * km
+        transitionOffset = 400 * km
+        print('trying to read' + '{}.geojson'.format(fileName) )
+        fc = read_feature_collection('{}.geojson'.format(fileName))
+        signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        midToHighResMask = np.minimum(midToHighResMask + mask, onesMask)
+        cellWidthHighRes = highRes*midToHighResMask + midRes*(1-midToHighResMask)
+        #del: cellWidthHighRes = midToHighResMask
+
+        fileNames = [
+                  'region_Arctic_Ocean',
+                  'region_Bering_Sea',
+                  'region_Kuroshio',
+                  'region_Gulf_Stream_extension']
+        for fileName in fileNames:
+            transitionOffset = transitionOffsetGlobal
+            transitionWidth = transitionWidthGlobal
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            highResMask = np.minimum(highResMask + mask, onesMask)
+            #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+            #_plot_cartopy(plotFrame + 1, 'highResMask', highResMask, '3Wbgy5')
+            #plotFrame += 2
 
         fileName = 'coastline_CUSP'
-        distanceToTransition = 800.0 * km
-        # transitionWidth is distance from 0.07 to 0.03 of transition within
-        # tanh
         transitionWidth = transitionWidthGlobal
-        transitionOffset = distanceToTransition + transitionWidth / 2.0
+        transitionOffset = 1200.0 * km
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        cellWidth = cellWidthRRS1to18 * mask + cellWidth * (1 - mask)
-        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        plotFrame += 2
+        highResMask = np.minimum(highResMask + mask, onesMask)
 
-        fileName = 'region_Gulf_of_Mexico'
-        transitionOffset = 800.0 * km
-        transitionWidth = transitionWidthGlobal
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                        (transitionWidth / 2.)))
-        maskSharp = 0.5 * (1 + np.sign(-signedDistance))
-        fc = read_feature_collection('land_mask_Mexico.geojson')
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        landMask = 0.5 * (1 + np.sign(-signedDistance))
-        mask = maskSharp * landMask + maskSmooth * (1 - landMask)
-        cellWidth = cellWidthRRS1to18 * mask + cellWidth * (1 - mask)
-        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        plotFrame += 2
-
-        fileName = 'region_Bering_Sea'
-        transitionOffset = transitionOffsetGlobal
-        transitionWidth = transitionWidthGlobal
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        cellWidth = highRes * mask + cellWidth * (1 - mask)
-        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        plotFrame += 2
-
-        fileName = 'region_Kuroshio'
-        transitionOffset = transitionOffsetGlobal
-        transitionWidth = transitionWidthGlobal
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        cellWidth = highRes * mask + cellWidth * (1 - mask)
-        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        plotFrame += 2
-
-        fileName = 'region_Arctic_Ocean'
-        transitionOffset = transitionOffsetGlobal
-        transitionWidth = transitionWidthGlobal
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        cellWidth = highRes * mask + cellWidth * (1 - mask)
         #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         #plotFrame += 2
 
-        fileName = 'region_Gulf_Stream_extension'
-        transitionOffset = transitionOffsetGlobal
-        transitionWidth = 2000.0 * km
+        #fileName = 'region_Gulf_of_Mexico'
+        #transitionOffset = 800.0 * km
+        #transitionWidth = transitionWidthGlobal
+        #fc = read_feature_collection('{}.geojson'.format(fileName))
+        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                              earth_radius,
+        #                                              max_length=0.25)
+        #maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                                (transitionWidth / 2.)))
+        #maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+        #fc = read_feature_collection('land_mask_Mexico.geojson')
+        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                              earth_radius,
+        #                                              max_length=0.25)
+        #landMask = 0.5 * (1 + np.sign(-signedDistance))
+        #mask = maskSharp * landMask + maskSmooth * (1 - landMask)
+        #highResMask = np.minimum(highResMask + mask, onesMask)
+        #cellWidth = cellWidthRRS1to18 * mask + cellWidth * (1 - mask)
+        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        #plotFrame += 2
+
+        #fileName = 'region_Bering_Sea'
+        #transitionOffset = transitionOffsetGlobal
+        #transitionWidth = transitionWidthGlobal
+        #fc = read_feature_collection('{}.geojson'.format(fileName))
+        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                              earth_radius,
+        #                                              max_length=0.25)
+        #mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                          (transitionWidth / 2.)))
+        #cellWidth = highRes * mask + cellWidth * (1 - mask)
+        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        #plotFrame += 2
+
+        #fileName = 'region_Kuroshio'
+        #transitionOffset = transitionOffsetGlobal
+        #transitionWidth = transitionWidthGlobal
+        #fc = read_feature_collection('{}.geojson'.format(fileName))
+        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                              earth_radius,
+        #                                              max_length=0.25)
+        #mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                          (transitionWidth / 2.)))
+        #cellWidth = highRes * mask + cellWidth * (1 - mask)
+        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        #plotFrame += 2
+
+
+        #fileName = 'region_Gulf_Stream_extension'
+        #transitionOffset = transitionOffsetGlobal
+        #transitionWidth = 2000.0 * km
+        #fc = read_feature_collection('{}.geojson'.format(fileName))
+        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                              earth_radius,
+        #                                              max_length=0.25)
+        #mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                          (transitionWidth / 2.)))
+        cellWidth = cellWidthHighRes * highResMask + cellWidthLowRes * (1 - highResMask)
+        ##cellWidth = cellWidthHighRes 
+
+        fileName = 'region_Mediterranean_Sea'
+        transitionWidth = 0.000001
+        transitionOffset = 0.0
+        MediterraneanRes = 6.0
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        cellWidth = highRes * mask + cellWidth * (1 - mask)
+        cellWidth = MediterraneanRes * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
 
-        ax = plt.subplot(6, 2, 1)
-        ax.plot(lat, RRS6to18, label='original RRS')
+
+        #ax = plt.subplot(6, 2, 1)
+        #ax.plot(lat, RRS6to18, label='original RRS')
         #ax.plot(lat, QU, label='original QU')
 # mrp del soon        ax.plot(lat, EC60to30Narrow, label='narrow EC60to30')
-        ax.grid(True)
+        #ax.grid(True)
         plt.title('Grid cell size [km] versus latitude')
         plt.legend(loc="upper left")
 
