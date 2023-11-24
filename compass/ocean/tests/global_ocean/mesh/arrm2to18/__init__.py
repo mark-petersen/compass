@@ -58,9 +58,9 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
             longitude in degrees (length m and between -90 and 90)
         """
 
-        # temp, use 0.5 for now: dlon = 0.1
-        #dlon = 0.1
+# use 1 degree to go faster
         dlon = 1.0
+        #dlon = 0.1
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
         print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '
@@ -91,12 +91,9 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         # create background tanh for high-res region
         latMid = 45.0
         latTransitionWidth = 5.0
-        midHighAvgRes = 0.5*(midRes + highRes)
-# create 1D array as a function of latitude
-        #midToHighResTanh = midHighAvgRes + (highRes - midHighAvgRes)*np.tanh( (lat - latMid) / latTransitionWidth )
+        # create 1D array as a function of latitude
         midToHighResTanh = 0.5 + 0.5*np.tanh( (lat - latMid) / latTransitionWidth )
         # Expand from 1D to 2D
-        #_, cellWidthHighRes = np.meshgrid(lon, midToHighResTanh)
         _, midToHighResMask = np.meshgrid(lon, midToHighResTanh)
 
         #highRes = 2.0  # [km]
@@ -112,6 +109,11 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         _, cellWidthLowRes = np.meshgrid(lon, QU)
 
 # start the high res mask as zeros, and add ones for the high res region
+        latMid = 47.0
+        latTransitionWidth = 5.0
+        # create 1D array as a function of latitude
+        highResTanh = 0.5 + 0.5*np.tanh( (lat - latMid) / latTransitionWidth )
+        ###_, highResMask = np.meshgrid(lon, highResTanh)
         _, highResMask = np.meshgrid(lon, np.zeros(lat.size))
         _, onesMask = np.meshgrid(lon, np.ones(lat.size))
         plotFrame = 1
@@ -126,7 +128,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        midToHighResMask = np.minimum(midToHighResMask + mask, onesMask)
+        midToHighResMask = np.maximum(midToHighResMask, mask)
 
         fileName = 'region_Kuroshio_north'
         transitionWidth = 800 * km
@@ -138,9 +140,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        midToHighResMask = np.minimum(midToHighResMask + mask, onesMask)
+        midToHighResMask = np.maximum(midToHighResMask, mask)
         cellWidthHighRes = highRes*midToHighResMask + midRes*(1-midToHighResMask)
-        #del: cellWidthHighRes = midToHighResMask
 
         fileNames = [
                   'region_Arctic_Ocean',
@@ -156,7 +157,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                           max_length=0.25)
             mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                       (transitionWidth / 2.)))
-            highResMask = np.minimum(highResMask + mask, onesMask)
+            highResMask = np.maximum(highResMask, mask)
             #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
             #_plot_cartopy(plotFrame + 1, 'highResMask', highResMask, '3Wbgy5')
             #plotFrame += 2
@@ -170,74 +171,10 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        highResMask = np.minimum(highResMask + mask, onesMask)
+        highResMask = np.maximum(highResMask, mask)
 
-        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        #plotFrame += 2
-
-        #fileName = 'region_Gulf_of_Mexico'
-        #transitionOffset = 800.0 * km
-        #transitionWidth = transitionWidthGlobal
-        #fc = read_feature_collection('{}.geojson'.format(fileName))
-        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
-        #                                              earth_radius,
-        #                                              max_length=0.25)
-        #maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-        #                                (transitionWidth / 2.)))
-        #maskSharp = 0.5 * (1 + np.sign(-signedDistance))
-        #fc = read_feature_collection('land_mask_Mexico.geojson')
-        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
-        #                                              earth_radius,
-        #                                              max_length=0.25)
-        #landMask = 0.5 * (1 + np.sign(-signedDistance))
-        #mask = maskSharp * landMask + maskSmooth * (1 - landMask)
-        #highResMask = np.minimum(highResMask + mask, onesMask)
-        #cellWidth = cellWidthRRS1to18 * mask + cellWidth * (1 - mask)
-        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        #plotFrame += 2
-
-        #fileName = 'region_Bering_Sea'
-        #transitionOffset = transitionOffsetGlobal
-        #transitionWidth = transitionWidthGlobal
-        #fc = read_feature_collection('{}.geojson'.format(fileName))
-        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
-        #                                              earth_radius,
-        #                                              max_length=0.25)
-        #mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-        #                          (transitionWidth / 2.)))
-        #cellWidth = highRes * mask + cellWidth * (1 - mask)
-        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        #plotFrame += 2
-
-        #fileName = 'region_Kuroshio'
-        #transitionOffset = transitionOffsetGlobal
-        #transitionWidth = transitionWidthGlobal
-        #fc = read_feature_collection('{}.geojson'.format(fileName))
-        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
-        #                                              earth_radius,
-        #                                              max_length=0.25)
-        #mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-        #                          (transitionWidth / 2.)))
-        #cellWidth = highRes * mask + cellWidth * (1 - mask)
-        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        #plotFrame += 2
-
-
-        #fileName = 'region_Gulf_Stream_extension'
-        #transitionOffset = transitionOffsetGlobal
-        #transitionWidth = 2000.0 * km
-        #fc = read_feature_collection('{}.geojson'.format(fileName))
-        #signedDistance = signed_distance_from_geojson(fc, lon, lat,
-        #                                              earth_radius,
-        #                                              max_length=0.25)
-        #mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-        #                          (transitionWidth / 2.)))
-        cellWidth = cellWidthHighRes * highResMask + cellWidthLowRes * (1 - highResMask)
-        ##cellWidth = cellWidthHighRes 
+        ###cellWidth = cellWidthHighRes * highResMask + cellWidthLowRes * (1 - highResMask)
+        cellWidth = highResMask
 
         fileName = 'region_Mediterranean_Sea'
         transitionWidth = 0.000001
@@ -249,7 +186,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        cellWidth = MediterraneanRes * mask + cellWidth * (1 - mask)
+        ###cellWidth = MediterraneanRes * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
