@@ -148,16 +148,19 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                   'region_Bering_Sea',
                   'region_Kuroshio',
                   'region_Gulf_Stream_extension']
+        transitionOffset = transitionOffsetGlobal
+        transitionWidth = transitionWidthGlobal
+        signedDistance = 1.0e12*onesMask 
         for fileName in fileNames:
-            transitionOffset = transitionOffsetGlobal
-            transitionWidth = transitionWidthGlobal
             fc = read_feature_collection('{}.geojson'.format(fileName))
-            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+            signedDistanceSingle = signed_distance_from_geojson(fc, lon, lat,
                                                           earth_radius,
                                                           max_length=0.25)
-            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                      (transitionWidth / 2.)))
-            highResMask = np.maximum(highResMask, mask)
+            signedDistance = np.minimum(signedDistance, signedDistanceSingle)
+        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        highResMask = np.minimum( np.maximum(signedDistance, -transitionWidth), transitionWidth)
+        ###highResMask = np.maximum(highResMask, mask)
             #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
             #_plot_cartopy(plotFrame + 1, 'highResMask', highResMask, '3Wbgy5')
             #plotFrame += 2
@@ -171,7 +174,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        highResMask = np.maximum(highResMask, mask)
+        ###highResMask = np.maximum(highResMask, mask)
 
         ###cellWidth = cellWidthHighRes * highResMask + cellWidthLowRes * (1 - highResMask)
         cellWidth = highResMask
