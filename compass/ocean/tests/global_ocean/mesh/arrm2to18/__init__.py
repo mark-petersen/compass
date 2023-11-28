@@ -91,11 +91,24 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         # Expand from 1D to 2D
         _, midToHighResMask = np.meshgrid(lon, midToHighResTanh)
 
+########################################################################
+#
+#  Define cell width for low resolution region: cellWidthLowRes
+#
+########################################################################
+
         QU = lowRes*np.ones(lat.size)
         RRS6to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, RRShighRes)
-        RRS1to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, highRes)
-        # Expand from 1D to 2D
-        _, cellWidthLowRes = np.meshgrid(lon, QU)
+
+        # Expand from 1D to 2D. Pick one of these:
+        #_, cellWidthLowRes = np.meshgrid(lon, QU)
+        _, cellWidthLowRes = np.meshgrid(lon, RRS6to18)
+
+########################################################################
+#
+#  Define cell width for high resolution region: cellWidthHighRes
+#
+########################################################################
 
 # start the high res mask as zeros, and add ones for the high res region
         latMid = 46.0
@@ -131,6 +144,12 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                   (transitionWidth / 2.)))
         midToHighResMask = np.maximum(midToHighResMask, mask)
         cellWidthHighRes = highRes*midToHighResMask + midRes*(1-midToHighResMask)
+
+########################################################################
+#
+#  Create mid-to-high resolution mask: highResMask
+#
+########################################################################
 
         fileName = 'region_Arctic_extended'
         transitionOffset = transitionOffsetGlobal
@@ -187,16 +206,10 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                   (transitionWidth / 2.)))
         cellWidth = MediterraneanRes * mask + cellWidth * (1 - mask)
 
-        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        plotFrame += 2
+        #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        #plotFrame += 2
 
-
-        #ax = plt.subplot(6, 2, 1)
-        #ax.plot(lat, RRS6to18, label='original RRS')
-        #ax.plot(lat, QU, label='original QU')
-# mrp del soon        ax.plot(lat, EC60to30Narrow, label='narrow EC60to30')
-        #ax.grid(True)
         plt.title('Grid cell size [km] versus latitude')
         plt.legend(loc="upper left")
 
