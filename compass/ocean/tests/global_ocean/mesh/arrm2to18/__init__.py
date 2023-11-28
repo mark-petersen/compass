@@ -68,18 +68,39 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         lat = np.linspace(-90., 90., nlat)
         km = 1.0e3
 
-        print('plotting ...')
-        plt.switch_backend('Agg')
-        fig = plt.figure()
-        plt.clf()
-        fig.set_size_inches(10.0, 14.0)
-        register_sci_viz_colormaps()
+        #print('plotting ...')
+        #plt.switch_backend('Agg')
+        #fig = plt.figure()
+        #plt.clf()
+        #fig.set_size_inches(10.0, 14.0)
+        #register_sci_viz_colormaps()
+
+########################################################################
+#
+#  Define cell width for low resolution region: cellWidthLowRes
+#
+########################################################################
+
+        # Expand from 1D to 2D. Pick one of these:
+
+        #QU1D = 18.0*np.ones(lat.size)
+        #_, cellWidthLowRes = np.meshgrid(lon, QU1D)
+
+        #RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
+        #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
+
+        RRS1D = mdt.RRS_CellWidthVsLat(lat, 25.0, 10.0)
+        _, cellWidthLowRes = np.meshgrid(lon, RRS1D)
+
+########################################################################
+#
+#  Define cell width for high resolution region: cellWidthHighRes
+#
+########################################################################
 
         # global settings for regionally-refined mesh
         highRes = 3.0  # [km]
-        lowRes = 18.0  # [km]
         midRes =  6.0  # [km]
-        RRShighRes = 10.0
         transitionOffsetGlobal = 0.0 * km
         transitionWidthGlobal = 2000.0 * km
 
@@ -90,26 +111,6 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         midToHighResTanh = 0.5 + 0.5*np.tanh( (lat - latMid) / latTransitionWidth )
         # Expand from 1D to 2D
         _, midToHighResMask = np.meshgrid(lon, midToHighResTanh)
-
-########################################################################
-#
-#  Define cell width for low resolution region: cellWidthLowRes
-#
-########################################################################
-
-        QU = lowRes*np.ones(lat.size)
-        RRS6to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, RRShighRes)
-
-        # Expand from 1D to 2D. Pick one of these:
-        #_, cellWidthLowRes = np.meshgrid(lon, QU)
-        _, cellWidthLowRes = np.meshgrid(lon, RRS6to18)
-
-########################################################################
-#
-#  Define cell width for high resolution region: cellWidthHighRes
-#
-########################################################################
-
 # start the high res mask as zeros, and add ones for the high res region
         latMid = 46.0
         latTransitionWidth = 5.0
