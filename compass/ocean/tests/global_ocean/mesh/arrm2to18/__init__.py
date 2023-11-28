@@ -80,7 +80,6 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         lowRes = 18.0  # [km]
         midRes =  6.0  # [km]
         RRShighRes = 10.0
-        #transitionOffsetGlobal = 200.0 * km
         transitionOffsetGlobal = 0.0 * km
         transitionWidthGlobal = 2000.0 * km
 
@@ -91,12 +90,6 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         midToHighResTanh = 0.5 + 0.5*np.tanh( (lat - latMid) / latTransitionWidth )
         # Expand from 1D to 2D
         _, midToHighResMask = np.meshgrid(lon, midToHighResTanh)
-
-        #highRes = 2.0  # [km]
-        #lowRes = 18.0  # [km]
-        #RRShighRes = 6.0
-        #EC60to30Narrow = mdt.EC_CellWidthVsLat(lat, latPosEq=8.0,
-        #                                       latWidthEq=3.0)
 
         QU = lowRes*np.ones(lat.size)
         RRS6to18 = mdt.RRS_CellWidthVsLat(lat, lowRes, RRShighRes)
