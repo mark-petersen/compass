@@ -54,8 +54,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
 # use 1 degree to go faster
-        #dlon = 1.0
-        dlon = 0.1
+        dlon = 1.0
+        #dlon = 0.1
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
@@ -83,14 +83,14 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         # Expand from 1D to 2D. Pick one of these:
 
-        #QU1D = 18.0*np.ones(lat.size)
-        #_, cellWidthLowRes = np.meshgrid(lon, QU1D)
+        QU1D = 18.0*np.ones(lat.size)
+        _, cellWidthLowRes = np.meshgrid(lon, QU1D)
 
         #RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
         #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
 
-        RRS1D = mdt.RRS_CellWidthVsLat(lat, 25.0, 10.0)
-        _, cellWidthLowRes = np.meshgrid(lon, RRS1D)
+        #RRS1D = mdt.RRS_CellWidthVsLat(lat, 25.0, 10.0)
+        #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
 
 ########################################################################
 #
@@ -209,12 +209,9 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         #_plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         #_plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        #plotFrame += 2
-
-        plt.title('Grid cell size [km] versus latitude')
-        plt.legend(loc="upper left")
-
-        plt.savefig('mesh_construction.png', dpi=300)
+        #plt.title('Grid cell size [km] versus latitude')
+        #plt.legend(loc="upper left")
+        #plt.savefig('mesh_construction.png', dpi=300)
 
         return cellWidth, lon, lat
 
