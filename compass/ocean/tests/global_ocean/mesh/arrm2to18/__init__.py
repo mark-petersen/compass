@@ -24,9 +24,9 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
         inputs = ['coastline_CUSP.geojson',
-                  'region_CUSP_north.geojson',
+                  'region_Kuroshio_CUSP.geojson',
+                  'region_Baltic_Sea.geojson',
                   'region_Arctic_extended.geojson',
-                  'region_Kuroshio_north.geojson',
                   'land_mask_Mexico.geojson',
                   'region_Gulf_of_Mexico.geojson',
                   'region_Mediterranean_Sea.geojson']
@@ -104,6 +104,26 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         transitionOffsetGlobal = 0.0 * km
         transitionWidthGlobal = 2000.0 * km
 
+        fileName = 'region_Kuroshio_CUSP'
+        transitionWidth = 800 * km
+        transitionOffset = 400.0 * km
+        print('trying to read' + '{}.geojson'.format(fileName) )
+        fc = read_feature_collection('{}.geojson'.format(fileName))
+        signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        midToHighResMask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        #del soon: midToHighResMask = np.maximum(midToHighResMask, mask)
+
+        cellWidthHighRes = highRes*midToHighResMask + midRes*(1-midToHighResMask)
+
+########################################################################
+#
+#  Create mid-to-high resolution mask: highResMask
+#
+########################################################################
+
         # create background tanh for high-res region
         latMid = 52.0
         latTransitionWidth = 5.0
@@ -120,37 +140,6 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         #_, highResMask = np.meshgrid(lon, np.zeros(lat.size))
         _, onesMask = np.meshgrid(lon, np.ones(lat.size))
         plotFrame = 1
-
-        fileName = 'region_CUSP_north'
-        transitionWidth = 800 * km
-        transitionOffset = 400.0 * km
-        print('trying to read' + '{}.geojson'.format(fileName) )
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        midToHighResMask = np.maximum(midToHighResMask, mask)
-
-        fileName = 'region_Kuroshio_north'
-        transitionWidth = 800 * km
-        transitionOffset = 400 * km
-        print('trying to read' + '{}.geojson'.format(fileName) )
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        midToHighResMask = np.maximum(midToHighResMask, mask)
-        cellWidthHighRes = highRes*midToHighResMask + midRes*(1-midToHighResMask)
-
-########################################################################
-#
-#  Create mid-to-high resolution mask: highResMask
-#
-########################################################################
 
         fileName = 'region_Arctic_extended'
         transitionOffset = transitionOffsetGlobal
@@ -174,7 +163,6 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
                                   (transitionWidth / 2.)))
         highResMask = np.maximum(highResMask, mask)
 
-
         fileName = 'region_Gulf_of_Mexico'
         transitionOffset = 800.0 * km
         transitionWidth = 2000.0 * km
@@ -193,12 +181,31 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         mask = maskSharp * landMask + maskSmooth * (1 - landMask)
         highResMask = np.maximum(highResMask, mask)
 
+########################################################################
+#
+#  Combine high and low res regions for final cellWidth
+#
+########################################################################
+
         cellWidth = cellWidthHighRes * highResMask + cellWidthLowRes * (1 - highResMask)
+        ##delcellWidth = highResMask# + cellWidthLowRes * (1 - highResMask)
+
+        fileName = 'region_Baltic_Sea'
+        transitionWidth = 200*km
+        transitionOffset = 0.0
+        BalticRes = highRes
+        fc = read_feature_collection('{}.geojson'.format(fileName))
+        signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        cellWidth = BalticRes * mask + cellWidth * (1 - mask)
 
         fileName = 'region_Mediterranean_Sea'
         transitionWidth = 0.000001
         transitionOffset = 0.0
-        MediterraneanRes = 6.0
+        MediterraneanRes = midRes
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,

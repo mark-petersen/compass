@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Baltic Sea mask",
+        "component": "ocean",
+        "object": "region",
+        "author": "Mark Petersen"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -3.4596121381644878,
+              48.81481333538977
+            ],
+            [
+              48.32839019148054,
+              57.00238552393492
+            ],
+            [
+              46.651045986471814,
+              71.93115471040821
+            ],
+            [
+              -8.072308701938482,
+              70.37417206919324
+            ],
+            [
+              -3.4596121381644878,
+              48.81481333538977
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
