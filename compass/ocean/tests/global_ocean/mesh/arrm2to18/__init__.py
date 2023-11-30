@@ -54,8 +54,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
 # use 1 degree to go faster
-        dlon = 1.0
-        #dlon = 0.1
+        #dlon = 1.0
+        dlon = 0.1
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
@@ -188,7 +188,6 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
 ########################################################################
 
         cellWidth = cellWidthHighRes * highResMask + cellWidthLowRes * (1 - highResMask)
-        ##delcellWidth = highResMask# + cellWidthLowRes * (1 - highResMask)
 
         fileName = 'region_Baltic_Sea'
         transitionWidth = 200*km
@@ -203,7 +202,7 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         cellWidth = BalticRes * mask + cellWidth * (1 - mask)
 
         fileName = 'region_Mediterranean_Sea'
-        transitionWidth = 0.000001
+        transitionWidth = 50*km
         transitionOffset = 0.0
         MediterraneanRes = midRes
         fc = read_feature_collection('{}.geojson'.format(fileName))
