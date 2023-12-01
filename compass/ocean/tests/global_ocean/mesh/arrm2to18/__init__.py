@@ -54,8 +54,8 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
 # use 1 degree to go faster
-        dlon = 1.0
-        #dlon = 0.1
+        #dlon = 1.0
+        dlon = 0.1
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
