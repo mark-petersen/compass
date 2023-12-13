@@ -14,9 +14,9 @@ from mpas_tools.viz.colormaps import register_sci_viz_colormaps
 from compass.mesh import QuasiUniformSphericalMeshStep
 
 
-class WC14BaseMesh(QuasiUniformSphericalMeshStep):
+class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
     """
-    A step for creating WC14 mesh
+    A step for creating Gulf of Mexico (GoM) 5km mesh
     """
     def setup(self):
         """

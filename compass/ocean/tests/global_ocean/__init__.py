@@ -48,7 +48,9 @@ class GlobalOcean(TestGroup):
         self._add_tests(mesh_names=['SOwISC12to30'],
                         mali_ais_topo='AIS_4to20km')
 
-        self._add_tests(mesh_names=['WC14', 'WCwISC14'])
+        self._add_tests(mesh_names=['WC14', 'WCISC14'])
+
+        self._add_tests(mesh_names=['GoM5', 'GoM5wISC5'])
 
         # RRS6to18: with and without cavities
         self._add_tests(mesh_names=['RRS6to18', 'RRSwISC6to18'])
