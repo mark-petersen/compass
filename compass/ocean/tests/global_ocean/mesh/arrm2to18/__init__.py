@@ -86,11 +86,11 @@ class ARRM2to18BaseMesh(QuasiUniformSphericalMeshStep):
         #QU1D = 18.0*np.ones(lat.size)
         #_, cellWidthLowRes = np.meshgrid(lon, QU1D)
 
-        RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
-        _, cellWidthLowRes = np.meshgrid(lon, RRS1D)
-
-        #RRS1D = mdt.RRS_CellWidthVsLat(lat, 25.0, 10.0)
+        #RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
         #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
+
+        RRS1D = mdt.RRS_CellWidthVsLat(lat, 30.0, 10.0)
+        _, cellWidthLowRes = np.meshgrid(lon, RRS1D)
 
 ########################################################################
 #
