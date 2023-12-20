@@ -56,8 +56,8 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
             longitude in degrees (length m and between -90 and 90)
         """
 
-        #dlon = 0.1
-        dlon = 1.0
+        dlon = 0.1
+        #dlon = 1.0
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
         #print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '

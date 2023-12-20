@@ -152,6 +152,8 @@ class SphericalBaseStep(Step):
                        extent=[-180, 180, -90, 90], cmap=cmap, zorder=0,
                        vmin=round(min_width), vmax=round(max_width))
         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
+# uncomment for zoom in:
+        #ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
         gl = ax.gridlines(
             crs=ccrs.PlateCarree(),
             draw_labels=True,
@@ -163,7 +165,8 @@ class SphericalBaseStep(Step):
         gl.right_labels = False
         plt.title(
             f'Grid cell size, km, min: {min_width:.1f} max: {max_width:.1f}')
-        evenTicks = np.arange(2*(int(min_width/2.0)+1), max_width, 2)
+        tickWidth=5.0
+        evenTicks = np.arange(tickWidth*(int(min_width/tickWidth)+1), max_width, tickWidth)
         Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
         cbar = plt.colorbar(im, shrink=.75, ticks = Ticks)
         fig.canvas.draw()
