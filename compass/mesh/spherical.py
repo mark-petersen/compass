@@ -147,13 +147,18 @@ class SphericalBaseStep(Step):
         ax.set_global()
         min_width = np.amin(cell_width)
         max_width = np.amax(cell_width)
+#  note: mrp setting max by hand:
+        #max_width = 30.0
+        max_width = 20.0
         im = ax.imshow(cell_width, origin='lower',
                        transform=ccrs.PlateCarree(),
                        extent=[-180, 180, -90, 90], cmap=cmap, zorder=0,
                        vmin=round(min_width), vmax=round(max_width))
         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
-# uncomment for zoom in:
+# uncomment for zoom in Gulf of Mexico:
         #ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
+# uncomment for zoom in TX-LA shelf:
+        ax.set_extent([-98.5, -87.5, 22.75, 31], crs=ccrs.PlateCarree())
         gl = ax.gridlines(
             crs=ccrs.PlateCarree(),
             draw_labels=True,
@@ -167,6 +172,7 @@ class SphericalBaseStep(Step):
             f'Grid cell size, km, min: {min_width:.1f} max: {max_width:.1f}')
         tickWidth=5.0
         evenTicks = np.arange(tickWidth*(int(min_width/tickWidth)+1), max_width, tickWidth)
+        Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
         Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
         cbar = plt.colorbar(im, shrink=.75, ticks = Ticks)
         fig.canvas.draw()
