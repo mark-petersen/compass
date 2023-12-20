@@ -25,11 +25,11 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 
         inputs = ['coastline_CUSP.geojson',
                   'land_mask_Kamchatka.geojson',
-                  'land_mask_Mexico.geojson',
-                  'namelist.split_explicit',
+                  'mask_western_Pacific.geojson',
                   'region_Atlantic_Southern_Oceans.geojson',
                   'region_Gulf_central_America.geojson',
                   'region_Gulf_of_Mexico.geojson',
+                  'region_Mediterranean_Sea.geojson',
                   'region_txla_shelf.geojson',
                   'region_txla_inner.geojson'
                   ]
@@ -57,7 +57,7 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
         #dlon = 0.1
-        dlon = 0.5
+        dlon = 1.0
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
         #print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '
@@ -105,8 +105,29 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         # Atlantic + southern ocean
         hr_atl_sou = 30.0
         fileName = 'region_Atlantic_Southern_Oceans'
-        transitionOffset = 700.0 * km
+        transitionOffset = 0.0 * km
         transitionWidth = 1000.0 * km
+        fc = read_feature_collection('{}.geojson'.format(fileName))
+        signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+        fc = read_feature_collection('mask_western_Pacific.geojson')
+        signedDistancePac = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        maskPacific = 0.5 * (1 + np.sign(-signedDistancePac))
+        mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+        cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
+        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        plotFrame += 2
+
+        fileName = 'region_Mediterranean_Sea'
+        transitionWidth = 50*km
+        transitionOffset = 0.0
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
@@ -114,9 +135,6 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
         cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
-        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        plotFrame += 2
 
         hr_gom_cen = 14.0
         fileName = 'region_Gulf_central_America'
@@ -126,13 +144,14 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
                                                       max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
+        maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+        mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
         cellWidth = hr_gom_cen * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
-        # highRes = 14.0  # [km]
 
        # fileName = 'region_Central_America'
        # transitionWidth = 800.0 * km
