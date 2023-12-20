@@ -27,14 +27,12 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
                   'land_mask_Kamchatka.geojson',
                   'land_mask_Mexico.geojson',
                   'namelist.split_explicit',
-                  'region_Arctic_Ocean.geojson',
-                  'region_Bering_Sea.geojson',
-                  'region_Bering_Sea_reduced.geojson',
-                  'region_Central_America.geojson',
+                  'region_Atlantic_Southern_Oceans.geojson',
+                  'region_Gulf_central_America.geojson',
                   'region_Gulf_of_Mexico.geojson',
-                  'region_atlantic.geojson',
                   'region_txla_shelf.geojson',
-                  'region_txla_inner.geojson']
+                  'region_txla_inner.geojson'
+                  ]
         for filename in inputs:
             self.add_input_file(filename=filename,
                                 package=self.__module__)
@@ -83,7 +81,6 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 #  Define cell width for low resolution region
 #
 ########################################################################
-
         # Expand from 1D to 2D. Pick one of these:
         lowRes = 100.0 # in km
         QU1D = lowRes*np.ones(lat.size)
@@ -94,27 +91,48 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 
 ########################################################################
 #
+#  Define cell width for variable mesh tests. This is master variable.
+#
+########################################################################
+
+        cellWidth_global = 100
+########################################################################
+#
 #  Define cell width for high resolution region
 #
 ########################################################################
 
-        # global settings for regionally refines mesh
-        highRes_atlantic = 30.0
-        fileName = 'region_Atlantic'
-        transitionOffset = 500.0 * km
-        transitionWidth = 900.0 * km
+        # Atlantic + southern ocean
+        hr_atl_sou = 30.0
+        fileName = 'region_Atlantic_Southern_Oceans'
+        transitionOffset = 700.0 * km
+        transitionWidth = 1000.0 * km
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
                                                       max_length=0.25)
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        #cellWidth = highRes_atlantic * mask + cellWidth * (1 - mask)
+        cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
 
-        highRes = 14.0  # [km]
+        hr_gom_cen = 14.0
+        fileName = 'region_Gulf_central_America'
+        transitionOffset = 0 * km
+        transitionWidth = 1000.0 * km
+        fc = read_feature_collection('{}.geojson'.format(fileName))
+        signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                      earth_radius,
+                                                      max_length=0.25)
+        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                  (transitionWidth / 2.)))
+        cellWidth = hr_gom_cen * mask + cellWidth * (1 - mask)
+        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        plotFrame += 2
+        # highRes = 14.0  # [km]
 
        # fileName = 'region_Central_America'
        # transitionWidth = 800.0 * km
@@ -127,27 +145,27 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
        #                           (transitionWidth / 2.)))
        # cellWidth = lowRes * mask + cellWidth * (1 - mask)
 
-        fileName = 'region_Gulf_of_Mexico'
-        transitionOffset = 100 * km
-        transitionWidth = 600 * km
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                        (transitionWidth / 2.)))
-        maskSharp = 0.5 * (1 + np.sign(-signedDistance))
-        fc = read_feature_collection('land_mask_Mexico.geojson')
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        landMask = 0.5 * (1 + np.sign(-signedDistance))
-        mask = maskSharp * landMask + maskSmooth * (1 - landMask)
-        #cellWidth = highRes * mask + cellWidth * (1 - mask)
-        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-        plotFrame += 2
-       
+        # fileName = 'region_Gulf_of_Mexico'
+        # transitionOffset = 100 * km
+        # transitionWidth = 600 * km
+        # fc = read_feature_collection('{}.geojson'.format(fileName))
+        # signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                               earth_radius,
+        #                                               max_length=0.25)
+        # maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                                 (transitionWidth / 2.)))
+        # maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+        # fc = read_feature_collection('land_mask_Mexico.geojson')
+        # signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                               earth_radius,
+        #                                               max_length=0.25)
+        # landMask = 0.5 * (1 + np.sign(-signedDistance))
+        # mask = maskSharp * landMask + maskSmooth * (1 - landMask)
+        # #cellWidth = highRes * mask + cellWidth * (1 - mask)
+        # _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
+        # _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
+        # plotFrame += 2
+        #
         highRes_txla = 5.0
         fileName = 'region_txla_shelf'
         transitionOffset = 100 * km
@@ -156,10 +174,10 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
                                                       max_length=0.25)
-    
+
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        #cellWidth = highRes_txla * mask + cellWidth * (1 - mask)
+        cellWidth = highRes_txla * mask + cellWidth * (1 - mask)
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
@@ -172,15 +190,15 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                       earth_radius,
                                                       max_length=0.25)
-        
+
         mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                   (transitionWidth / 2.)))
-        #cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)
-        #plot_shelf(cellWidth, '3Wbgy5')
+        cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)
+        plot_shelf(cellWidth, '3Wbgy5')
         _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
         _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
         plotFrame += 2
- 
+
         ax = plt.subplot(6, 2, 1)
         ax.grid(True)
         plt.title('Grid cell size [km] versus latitude')
@@ -197,7 +215,7 @@ def _plot_cartopy(nPlot, varName, var, map_name):
     im = ax.imshow(var,
                    origin='lower',
                    transform=ccrs.PlateCarree(),
-                   extent=[-120, 60, -70, 70], cmap=map_name,
+                   cmap=map_name,
                    zorder=0)
     ax.add_feature(cfeature.LAND, edgecolor='black', zorder=1)
     gl = ax.gridlines(
@@ -216,30 +234,30 @@ def _plot_cartopy(nPlot, varName, var, map_name):
     plt.colorbar(im, shrink=.9)
     plt.title(varName)
 
-#def plot_shelf(var, map_name):
-#   fig, ax = plt.subplots(1, figsize = (5.4,4.5),
-#                          subplot_kw={'projection': ccrs.PlateCarree()}, 
-#                          constrained_layout = True)
-#   im = ax.scatter(lon, lat, c = var,
-#                  origin='lower',
-#                  transform=ccrs.PlateCarree(),
-#                  cmap=map_name,
-#                  )
-#   ax.set_extent([-98.5, -87.5, 22.75, 31])
-#   ax.add_feature(cfeature.LAND, edgecolor='black')
-#   gl = ax.gridlines(
-#        crs=ccrs.PlateCarree(),
-#        draw_labels=True,
-#        linewidth=1,
-#        color='gray',
-#        alpha=0.5,
-#        linestyle='-')
-#   ax.coastlines()
-#   gl.top_labels = True
-#   gl.bottom_labels = False
-#   gl.right_labels = False
-#   gl.left_labels = True
-#   fig.colorbar(im, shrink=.9)
-#   ax.set_title('Lateral grid resolution [km]')
-#   plt.savefig('GoM_refined.png', dpi = 600)
-#   plt.close(fig)
+def plot_shelf(var, map_name):#figsize = (5.4,4.5),
+  fig, ax = plt.subplots(1, subplot_kw={'projection': ccrs.PlateCarree()})
+  im = ax.imshow(var,
+                 origin = 'lower',
+                 cmap=map_name,
+                 vmin=0, vmax = 14,
+                 extent = (-98.5, -87.5, 22.75, 31),
+                 transform=ccrs.PlateCarree())
+  ax.add_feature(cfeature.LAND, edgecolor='black')
+  ax.coastlines()
+  gl = ax.gridlines(
+         crs=ccrs.PlateCarree(),
+         draw_labels=True,
+         linewidth=1,
+         color='gray',
+         alpha=0.5,
+         linestyle='-')
+  gl.top_labels = True
+  gl.bottom_labels = False
+  gl.right_labels = False
+  gl.left_labels = True
+  cbar = fig.colorbar(im, shrink=.9)
+  ax.set_extent([-98.5, -87.5, 22.75, 31], ccrs.PlateCarree())
+  ax.set_title('Lateral grid resolution [km]')
+  plt.savefig('GoM_refined.png', dpi = 600)
+  plt.close(fig)
+
