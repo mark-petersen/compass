@@ -59,9 +59,9 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 # pick your case:
         #case = 'qu100'
         #case = 'atl60'
-        case = 'atl30'
+        #case = 'atl30'
         #case = 'gom14'
-        #case = 'gom5'
+        case = 'gom5'
         #case = 'gom3'
 
         if case == 'qu100':
@@ -76,6 +76,10 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
             hr_atl_sou = 30.0
             hr_gom_cen = 30.0
             dlon = 0.1
+        elif case == 'gom14':
+            hr_atl_sou = 30.0
+            hr_gom_cen = 14.0
+            dlon = 0.1
         elif case == 'gom5':
             hr_atl_sou = 30.0
             hr_gom_cen = 14.0
@@ -83,7 +87,7 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         elif case == 'gom3':
             hr_atl_sou = 30.0
             hr_gom_cen = 14.0
-            dlon = 0.05
+            dlon = 0.03
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
