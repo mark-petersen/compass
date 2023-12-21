@@ -203,7 +203,7 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 
         highRes_txla_inner = 3.0
         fileName = 'region_txla_inner'
-        transitionOffset = 50 * km
+        transitionOffset = 80 * km
         transitionWidth = 100 * km
         fc = read_feature_collection('{}.geojson'.format(fileName))
         signedDistance = signed_distance_from_geojson(fc, lon, lat,
