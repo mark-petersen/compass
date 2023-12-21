@@ -148,17 +148,17 @@ class SphericalBaseStep(Step):
         min_width = np.amin(cell_width)
         max_width = np.amax(cell_width)
 #  note: mrp setting max by hand:
-        #max_width = 30.0
         max_width = 20.0
+        #max_width = 100.0
         im = ax.imshow(cell_width, origin='lower',
                        transform=ccrs.PlateCarree(),
                        extent=[-180, 180, -90, 90], cmap=cmap, zorder=0,
                        vmin=round(min_width), vmax=round(max_width))
         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
 # uncomment for zoom in Gulf of Mexico:
-        #ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
+        ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
 # uncomment for zoom in TX-LA shelf:
-        ax.set_extent([-98.5, -87.5, 22.75, 31], crs=ccrs.PlateCarree())
+#        ax.set_extent([-98.5, -87.5, 22.75, 31], crs=ccrs.PlateCarree())
         gl = ax.gridlines(
             crs=ccrs.PlateCarree(),
             draw_labels=True,
