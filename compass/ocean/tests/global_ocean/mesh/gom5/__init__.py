@@ -58,8 +58,8 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 
 # pick your case:
         #case = 'qu100'
-        case = 'atl60'
-        #case = 'atl30'
+        #case = 'atl60'
+        case = 'atl30'
         #case = 'gom14'
         #case = 'gom5'
         #case = 'gom3'
@@ -140,10 +140,6 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         maskPacific = 0.5 * (1 + np.sign(-signedDistancePac))
         mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
         cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
-
-#        _plot_cartopy(plotFrame, fileName + ' mask', mask, 'Blues')
-#        _plot_cartopy(plotFrame + 1, 'cellWidth ', cellWidth, '3Wbgy5')
-#        plotFrame += 2
 
         fileName = 'region_Mediterranean_Sea'
         transitionWidth = 50*km
