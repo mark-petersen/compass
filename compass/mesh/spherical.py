@@ -145,7 +145,7 @@ class SphericalBaseStep(Step):
 # Dschlichting: Manually change this to pcolormesh for zoomed in regions.
 # Comment this out if you want to do coarse res imshow instead
 ###---------------------
-        dlon = 0.03 #Change this to match __init__.py
+        dlon = 1 #Change this to match __init__.py
         dlat = dlon
         nlon = int(360. / dlon) + 1
         nlat = int(180. / dlat) + 1
@@ -159,7 +159,7 @@ class SphericalBaseStep(Step):
         min_width = np.amin(cell_width)
         max_width = np.amax(cell_width)
     #  note: mrp setting max by hand:
-        max_width = 20.0
+        #max_width = 20.0
         #max_width = 100.0
         im = ax.pcolormesh(Lon, Lat, cell_width,
                            vmin=round(min_width), vmax=round(max_width),
@@ -168,7 +168,7 @@ class SphericalBaseStep(Step):
                            )
         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
     # uncomment for zoom in Gulf of Mexico:
-        ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
+    #    ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
     # uncomment for zoom in TX-LA shelf:
     #    ax.set_extent([-98.5, -86.5, 22.75, 31], crs=ccrs.PlateCarree())
         gl = ax.gridlines(
