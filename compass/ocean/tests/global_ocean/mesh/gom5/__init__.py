@@ -61,8 +61,10 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         #case = 'atl60'
         #case = 'atl30'
         #case = 'gom14'
-        case = 'gom5'
+        #case = 'gom5'
         #case = 'gom3'
+        #case = 'gom_uniform_3'
+        case = 'gom1'
 
         if case == 'qu100':
             hr_atl_sou = 100.0
@@ -85,6 +87,14 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
             hr_gom_cen = 14.0
             dlon = 0.05
         elif case == 'gom3':
+            hr_atl_sou = 30.0
+            hr_gom_cen = 14.0
+            dlon = 0.03
+        elif case == 'gom_uniform_3':
+            hr_atl_sou = 30.0
+            hr_gom_cen = 14.0
+            dlon = 0.03
+        elif case == 'gom1':
             hr_atl_sou = 30.0
             hr_gom_cen = 14.0
             dlon = 0.03
@@ -197,6 +207,33 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
                                       (transitionWidth / 2.)))
             cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)
 
+        if case == 'gom_uniform_3' or 'gom1':
+            highRes_txla = 2.9
+            fileName = 'region_txla_shelf'
+            transitionOffset = 200 * km
+            transitionWidth = 500 * km
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+
+            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            cellWidth = highRes_txla * mask + cellWidth * (1 - mask)
+       
+        if case == 'gom1':
+            highRes_txla_inner = 1.0
+            fileName = 'region_txla_inner'
+            transitionOffset = 80 * km
+            transitionWidth = 100 * km
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+
+            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)            
         return cellWidth, lon, lat
 
 def _plot_cartopy(nPlot, varName, var, map_name):
