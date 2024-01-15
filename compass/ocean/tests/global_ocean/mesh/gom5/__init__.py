@@ -26,7 +26,9 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         inputs = ['coastline_CUSP.geojson',
                   'land_mask_Kamchatka.geojson',
                   'mask_western_Pacific.geojson',
+                  'mask_eastern_Gulf_of_Mexico.geojson',
                   'region_Atlantic_Southern_Oceans.geojson',
+                  'region_Atlantic_30_60.geojson',
                   'region_Gulf_central_America.geojson',
                   'region_Gulf_of_Mexico.geojson',
                   'region_Mediterranean_Sea.geojson',
@@ -57,14 +59,13 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
 # pick your case:
-        #case = 'qu100'
-        #case = 'atl60'
-        #case = 'atl30'
-        #case = 'gom14'
-        #case = 'gom5'
-        #case = 'gom3'
-        #case = 'gom_uniform_3'
-        case = 'gom1'
+        # case = 'qu100'
+        # case = 'atl60'
+        # case = 'atl30'
+        # case = 'gom14'
+        # case = 'gom14_atl60'
+        # case = 'gom5'
+        case = 'gom3_r2'
 
         if case == 'qu100':
             hr_atl_sou = 100.0
@@ -82,6 +83,11 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
             hr_atl_sou = 30.0
             hr_gom_cen = 14.0
             dlon = 0.1
+        elif case == 'gom14_atl60':
+            hr_atl_sou = 60.0
+            hr_atl_inner = 30.0
+            hr_gom_cen = 14.0
+            dlon = 0.1
         elif case == 'gom5':
             hr_atl_sou = 30.0
             hr_gom_cen = 14.0
@@ -90,18 +96,16 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
             hr_atl_sou = 30.0
             hr_gom_cen = 14.0
             dlon = 0.03
-        elif case == 'gom_uniform_3':
-            hr_atl_sou = 30.0
+        elif case == 'gom3_r2':
+            hr_atl_sou = 60.0
+            hr_atl_inner = 30.0
             hr_gom_cen = 14.0
-            dlon = 0.03
-        elif case == 'gom1':
-            hr_atl_sou = 30.0
-            hr_gom_cen = 14.0
-            dlon = 0.03
+            hr_gom_west = 3.0
+            dlon = 0.1
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
-        #print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '
+        # print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '
         #      'degrees'.format(dlon, dlat))
         print('This can be set higher for faster test generation\n')
         nlon = int(360. / dlon) + 1
@@ -135,105 +139,193 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 #  Define cell width for high resolution region
 #
 ########################################################################
-
         # Atlantic + southern ocean
-        fileName = 'region_Atlantic_Southern_Oceans'
-        transitionOffset = 0.0 * km
-        transitionWidth = 1000.0 * km
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        maskSharp = 0.5 * (1 + np.sign(-signedDistance))
-        fc = read_feature_collection('mask_western_Pacific.geojson')
-        signedDistancePac = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        maskPacific = 0.5 * (1 + np.sign(-signedDistancePac))
-        mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
-        cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
+        if case == 'gom14_atl60' or case == 'gom3_r2':
+            # Atlantic + southern ocean
+            fileName = 'region_Atlantic_Southern_Oceans'
+            transitionOffset = 0.0 * km
+            transitionWidth = 1000.0 * km
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+            maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+            fc = read_feature_collection('mask_western_Pacific.geojson')
+            signedDistancePac = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+            maskPacific = 0.5 * (1 + np.sign(-signedDistancePac))
+            mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+            cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
 
-        fileName = 'region_Mediterranean_Sea'
-        transitionWidth = 50*km
-        transitionOffset = 0.0
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
+            fileName = 'region_Mediterranean_Sea'
+            transitionWidth = 50*km
+            transitionOffset = 0.0
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
 
-        fileName = 'region_Gulf_central_America'
-        transitionOffset = 1000 * km
-        transitionWidth = 1000.0 * km
-        fc = read_feature_collection('{}.geojson'.format(fileName))
-        signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                      earth_radius,
-                                                      max_length=0.25)
-        maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                  (transitionWidth / 2.)))
-        maskSharp = 0.5 * (1 + np.sign(-signedDistance))
-        mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
-        cellWidth = hr_gom_cen * mask + cellWidth * (1 - mask)
+            fileName = 'region_Gulf_central_America'
+            transitionOffset = 3000 * km
+            transitionWidth = 2500.0 * km
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+            maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+            mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+            cellWidth = hr_atl_inner * mask + cellWidth * (1 - mask)
 
-        if case == 'gom5' or case == 'gom3':
-            highRes_txla = 5.0
-            fileName = 'region_txla_shelf'
-            transitionOffset = 200 * km
+            fileName = 'region_Gulf_central_America'
+            transitionOffset = 1000 * km
+            transitionWidth = 1000.0 * km
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+            maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+            mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+            cellWidth = hr_gom_cen * mask + cellWidth * (1 - mask)
+
+        if  case =='gom3_r2':
+
+            hr_gom_west = 9.0
+            fileName = 'region_Gulf_of_Mexico'
+            transitionOffset = 1200 * km
+            transitionWidth = 1800 * km
+            fc = read_feature_collection('{}.geojson'.format(fileName))
+            signedDistance = signed_distance_from_geojson(fc, lon, lat,
+                                                          earth_radius,
+                                                          max_length=0.25)
+            maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+                                      (transitionWidth / 2.)))
+            maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+            mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+            cellWidth = hr_gom_west * mask + cellWidth * (1 - mask)
+
+            hr_gom_west = 3.0
+            fileName = 'region_Gulf_of_Mexico'
+            transitionOffset = 450 * km
             transitionWidth = 500 * km
             fc = read_feature_collection('{}.geojson'.format(fileName))
             signedDistance = signed_distance_from_geojson(fc, lon, lat,
                                                           earth_radius,
                                                           max_length=0.25)
-
-            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+            maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
                                       (transitionWidth / 2.)))
-            cellWidth = highRes_txla * mask + cellWidth * (1 - mask)
+            maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+            mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+            cellWidth = hr_gom_west * mask + cellWidth * (1 - mask)
 
-        if case == 'gom3':
-            highRes_txla_inner = 3.0
-            fileName = 'region_txla_inner'
-            transitionOffset = 80 * km
-            transitionWidth = 100 * km
-            fc = read_feature_collection('{}.geojson'.format(fileName))
-            signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                          earth_radius,
-                                                          max_length=0.25)
 
-            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                      (transitionWidth / 2.)))
-            cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)
 
-        if case == 'gom_uniform_3' or 'gom1':
-            highRes_txla = 2.9
-            fileName = 'region_txla_shelf'
-            transitionOffset = 200 * km
-            transitionWidth = 500 * km
-            fc = read_feature_collection('{}.geojson'.format(fileName))
-            signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                          earth_radius,
-                                                          max_length=0.25)
+        # fileName = 'region_Atlantic_Southern_Oceans'
+        # transitionOffset = 0.0 * km
+        # transitionWidth = 1000.0 * km
+        # fc = read_feature_collection('{}.geojson'.format(fileName))
+        # signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                               earth_radius,
+        #                                               max_length=0.25)
+        # maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                           (transitionWidth / 2.)))
+        # maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+        # fc = read_feature_collection('mask_western_Pacific.geojson')
+        # signedDistancePac = signed_distance_from_geojson(fc, lon, lat,
+        #                                               earth_radius,
+        #                                               max_length=0.25)
+        # maskPacific = 0.5 * (1 + np.sign(-signedDistancePac))
+        # mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+        # cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
+        #
+        # fileName = 'region_Mediterranean_Sea'
+        # transitionWidth = 50*km
+        # transitionOffset = 0.0
+        # fc = read_feature_collection('{}.geojson'.format(fileName))
+        # signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                               earth_radius,
+        #                                               max_length=0.25)
+        # mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                           (transitionWidth / 2.)))
+        # cellWidth = hr_atl_sou * mask + cellWidth * (1 - mask)
+        #
+        # fileName = 'region_Gulf_central_America'
+        # transitionOffset = 1000 * km
+        # transitionWidth = 1000.0 * km
+        # fc = read_feature_collection('{}.geojson'.format(fileName))
+        # signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                               earth_radius,
+        #                                               max_length=0.25)
+        # maskSmooth = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                           (transitionWidth / 2.)))
+        # maskSharp = 0.5 * (1 + np.sign(-signedDistance))
+        # mask = maskSharp * maskPacific + maskSmooth * (1 - maskPacific)
+        # cellWidth = hr_gom_cen * mask + cellWidth * (1 - mask)
 
-            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                      (transitionWidth / 2.)))
-            cellWidth = highRes_txla * mask + cellWidth * (1 - mask)
-       
-        if case == 'gom1':
-            highRes_txla_inner = 1.0
-            fileName = 'region_txla_inner'
-            transitionOffset = 80 * km
-            transitionWidth = 100 * km
-            fc = read_feature_collection('{}.geojson'.format(fileName))
-            signedDistance = signed_distance_from_geojson(fc, lon, lat,
-                                                          earth_radius,
-                                                          max_length=0.25)
-
-            mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
-                                      (transitionWidth / 2.)))
-            cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)            
+        # if case == 'gom5' or case == 'gom3':
+        #     highRes_txla = 5.0
+        #     fileName = 'region_txla_shelf'
+        #     transitionOffset = 200 * km
+        #     transitionWidth = 500 * km
+        #     fc = read_feature_collection('{}.geojson'.format(fileName))
+        #     signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                                   earth_radius,
+        #                                                   max_length=0.25)
+        #
+        #     mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                               (transitionWidth / 2.)))
+        #     cellWidth = highRes_txla * mask + cellWidth * (1 - mask)
+        #
+        # if case == 'gom3':
+        #     highRes_txla_inner = 3.0
+        #     fileName = 'region_txla_inner'
+        #     transitionOffset = 80 * km
+        #     transitionWidth = 100 * km
+        #     fc = read_feature_collection('{}.geojson'.format(fileName))
+        #     signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                                   earth_radius,
+        #                                                   max_length=0.25)
+        #
+        #     mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                               (transitionWidth / 2.)))
+        #     cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)
+        #
+        # if case == 'gom_uniform_3' or 'gom1':
+        #     highRes_txla = 2.9
+        #     fileName = 'region_txla_shelf'
+        #     transitionOffset = 200 * km
+        #     transitionWidth = 500 * km
+        #     fc = read_feature_collection('{}.geojson'.format(fileName))
+        #     signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                                   earth_radius,
+        #                                                   max_length=0.25)
+        #
+        #     mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                               (transitionWidth / 2.)))
+        #     cellWidth = highRes_txla * mask + cellWidth * (1 - mask)
+        #
+        # if case == 'gom1':
+        #     highRes_txla_inner = 1.0
+        #     fileName = 'region_txla_inner'
+        #     transitionOffset = 80 * km
+        #     transitionWidth = 100 * km
+        #     fc = read_feature_collection('{}.geojson'.format(fileName))
+        #     signedDistance = signed_distance_from_geojson(fc, lon, lat,
+        #                                                   earth_radius,
+        #                                                   max_length=0.25)
+        #
+        #     mask = 0.5 * (1 + np.tanh((transitionOffset - signedDistance) /
+        #                               (transitionWidth / 2.)))
+        #     cellWidth = highRes_txla_inner * mask + cellWidth * (1 - mask)
         return cellWidth, lon, lat
 
 def _plot_cartopy(nPlot, varName, var, map_name):
@@ -261,4 +353,3 @@ def _plot_cartopy(nPlot, varName, var, map_name):
     gl.left_labels = False
     plt.colorbar(im, shrink=.9)
     plt.title(varName)
-

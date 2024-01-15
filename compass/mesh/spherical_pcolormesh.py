@@ -70,7 +70,7 @@ class SphericalBaseStep(Step):
         da.to_netcdf(cell_width_filename)
 
         if section.getboolean('plot_cell_width'):
-            self._plot_cell_width(cell_width)
+            self._plot_cell_width(lon, lat, cell_width)
 
     def setup(self):
         """
@@ -128,7 +128,7 @@ class SphericalBaseStep(Step):
         make_graph_file(mesh_filename=mpas_mesh_filename,
                         graph_filename='graph.info')
 
-    def _plot_cell_width(self, cell_width):
+    def _plot_cell_width(self, lon, lat, cell_width):
         """
         Plot a lat/lon map of cell widths (mesh resolution)
 
@@ -142,17 +142,9 @@ class SphericalBaseStep(Step):
         image_filename = config.get('spherical_mesh',
                                     'cell_width_image_filename')
         register_sci_viz_colormaps()
-        fig = plt.figure(figsize=[16.0, 8.0])
-        ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=-120.0))
-        ax.set_global()
-        #min_width = np.amin(cell_width)
-        min_width = 3.0
-        #max_width = np.amax(cell_width)
-        max_width = 80.0
-        #im = ax.imshow(cell_width, origin='lower',
-        #               transform=ccrs.PlateCarree(),
-        #               extent=[-180, 180, -90, 90], cmap=cmap, zorder=0,
-        #               vmin=round(min_width), vmax=round(max_width))
+# Dschlichting: Manually change this to pcolormesh for zoomed in regions.
+# Comment this out if you want to do coarse res imshow instead
+###---------------------
         dlon = 0.1 #Change this to match __init__.py
         dlat = dlon
         nlon = int(360. / dlon) + 1
@@ -167,8 +159,8 @@ class SphericalBaseStep(Step):
         min_width = np.amin(cell_width)
         max_width = np.amax(cell_width)
     #  note: mrp setting max by hand:
-        #max_width = 15.0 #15.0 for 1 km case
-        max_width = 80.0
+        #max_width = 20.0
+        #max_width = 100.0
         im = ax.pcolormesh(Lon, Lat, cell_width,
                            vmin=round(min_width), vmax=round(max_width),
                            cmap = cmap,
@@ -176,12 +168,9 @@ class SphericalBaseStep(Step):
                            )
         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
     # uncomment for zoom in Gulf of Mexico:
-        ax.set_extent([-100, -60, 0, 35], crs=ccrs.PlateCarree())
+    #    ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
     # uncomment for zoom in TX-LA shelf:
-        #ax.set_extent([-98.5, -86.5, 22.75, 31], crs=ccrs.PlateCarree())
-        ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
-# uncomment for zoom in:
-        #ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
+    #    ax.set_extent([-98.5, -86.5, 22.75, 31], crs=ccrs.PlateCarree())
         gl = ax.gridlines(
             crs=ccrs.PlateCarree(),
             draw_labels=True,
@@ -196,11 +185,51 @@ class SphericalBaseStep(Step):
         tickWidth=5.0
         evenTicks = np.arange(tickWidth*(int(min_width/tickWidth)+1), max_width, tickWidth)
         Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
-        cbar = plt.colorbar(im, shrink=.85, ticks = Ticks)
+        Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
+        cbar = plt.colorbar(im, shrink=.75, ticks = Ticks)
         fig.canvas.draw()
         plt.tight_layout()
-        plt.savefig(image_filename, bbox_inches='tight', dpi=300)
+        plt.savefig(image_filename, bbox_inches='tight', dpi = 600)
         plt.close()
+###---------------------
+
+#         fig = plt.figure(figsize=[16.0, 8.0])
+#         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=-120.0))
+#         ax.set_global()
+#         min_width = np.amin(cell_width)
+#         max_width = np.amax(cell_width)
+# #  note: mrp setting max by hand:
+#         max_width = 15.0
+#         #max_width = 100.0
+#         im = ax.imshow(cell_width, origin='lower',
+#                        transform=ccrs.PlateCarree(),
+#                        extent=[-180, 180, -90, 90], cmap=cmap, zorder=0,
+#                        vmin=round(min_width), vmax=round(max_width))
+#         ax.add_feature(cartopy.feature.LAND, edgecolor='black', zorder=1)
+# # uncomment for zoom in Gulf of Mexico:
+# #        ax.set_extent([-100, -60, 10, 35], crs=ccrs.PlateCarree())
+# # uncomment for zoom in TX-LA shelf:
+#         ax.set_extent([-98.5, -87.5, 22.75, 31], crs=ccrs.PlateCarree())
+#         gl = ax.gridlines(
+#             crs=ccrs.PlateCarree(),
+#             draw_labels=True,
+#             linewidth=1,
+#             color='gray',
+#             alpha=0.5,
+#             linestyle='-', zorder=2)
+#         gl.top_labels = False
+#         gl.right_labels = False
+#         plt.title(
+#             f'Grid cell size, km, min: {min_width:.1f} max: {max_width:.1f}')
+#         tickWidth=5.0
+#         evenTicks = np.arange(tickWidth*(int(min_width/tickWidth)+1), max_width, tickWidth)
+#         Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
+#         Ticks = np.concatenate((round(min_width), evenTicks, round(max_width)), axis=None)
+#         cbar = plt.colorbar(im, shrink=.75, ticks = Ticks)
+#         fig.canvas.draw()
+#         plt.tight_layout()
+#         plt.savefig(image_filename, bbox_inches='tight', dpi = 800)
+#         plt.close()
 
 
 class QuasiUniformSphericalMeshStep(SphericalBaseStep):
@@ -298,7 +327,7 @@ class QuasiUniformSphericalMeshStep(SphericalBaseStep):
         logger.info(f'  cell width: {cell_width} km')
 
         # save the constant approximate resolution on a 10 degree grid
-        dlon = 10.
+        dlon = 0.1
         dlat = dlon
         nlon = int(360. / dlon) + 1
         nlat = int(180. / dlat) + 1

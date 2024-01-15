@@ -57,16 +57,16 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
             longitude in degrees (length m and between -90 and 90)
         """
 
-        # pick your case:
-        # case = 'qu100'
-        # case = 'atl60'
-        # case = 'atl30'
-        # case = 'gom14'
+# pick your case:
+        #case = 'qu100'
+        #case = 'atl60'
+        #case = 'atl30'
+        #case = 'gom14'
         case = 'gom14_atl60'
-        # case = 'gom5'
-        # case = 'gom3'
-        # case = 'gom_uniform_3'
-        # case = 'gom1'
+        #case = 'gom5'
+        #case = 'gom3'
+        #case = 'gom_uniform_3'
+        #case = 'gom1'
 
         if case == 'qu100':
             hr_atl_sou = 100.0
@@ -108,7 +108,7 @@ class GoM5BaseMesh(QuasiUniformSphericalMeshStep):
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
-        # print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '
+        #print('\nCreating cellWidth on a lat-lon grid of: {0:.2f} x {0:.2f} '
         #      'degrees'.format(dlon, dlat))
         print('This can be set higher for faster test generation\n')
         nlon = int(360. / dlon) + 1
