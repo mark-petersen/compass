@@ -83,7 +83,7 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         # Expand from 1D to 2D. Pick one of these:
 
-        QU1D = 60.0*np.ones(lat.size)
+        QU1D = 18.0*np.ones(lat.size)
         _, cellWidthLowRes = np.meshgrid(lon, QU1D)
 
         #RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
@@ -99,8 +99,8 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
 ########################################################################
 
         # global settings for regionally-refined mesh
-        highRes = 15.0 #3.0  # [km]
-        midRes =  30.0 #6.0  # [km]
+        highRes = 3.0  # [km]
+        midRes =  6.0  # [km]
         transitionOffsetGlobal = 0.0 * km
         transitionWidthGlobal = 2000.0 * km
 
