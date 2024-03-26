@@ -7,7 +7,7 @@ from compass.mesh.spherical import (
 from compass.ocean.mesh.cull import CullMeshStep
 from compass.ocean.mesh.remap_topography import RemapTopography
 from compass.ocean.tests.global_ocean.mesh.arrm10to60 import ARRM10to60BaseMesh
-from compass.ocean.tests.global_ocean.mesh.arrm2to18 import ARRM2to18BaseMesh
+from compass.ocean.tests.global_ocean.mesh.arrm3to18 import ARRM3to18BaseMesh
 from compass.ocean.tests.global_ocean.mesh.ec30to60 import EC30to60BaseMesh
 from compass.ocean.tests.global_ocean.mesh.fris01to60 import FRIS01to60BaseMesh
 from compass.ocean.tests.global_ocean.mesh.fris02to60 import FRIS02to60BaseMesh
@@ -127,8 +127,8 @@ class Mesh(TestCase):
             base_mesh_step = EC30to60BaseMesh(self, name=name, subdir=subdir)
         elif mesh_name in ['ARRM10to60', 'ARRMwISC10to60']:
             base_mesh_step = ARRM10to60BaseMesh(self, name=name, subdir=subdir)
-        elif mesh_name in ['ARRM2to18', 'ARRMwISC2to18']:
-            base_mesh_step = ARRM2to18BaseMesh(self, name=name, subdir=subdir)
+        elif mesh_name in ['ARRM3to18', 'ARRMwISC3to18']:
+            base_mesh_step = ARRM3to18BaseMesh(self, name=name, subdir=subdir)
         elif mesh_name in ['RRS6to18', 'RRSwISC6to18']:
             base_mesh_step = RRS6to18BaseMesh(self, name=name, subdir=subdir)
         elif mesh_name in ['SO12to30', 'SOwISC12to30']:
