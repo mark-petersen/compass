@@ -45,7 +45,7 @@ class GlobalOcean(TestGroup):
         self._add_tests(mesh_names=['ARRM10to60', 'ARRMwISC10to60'])
 
         self._add_tests(mesh_names=['SO12to30', 'SOwISC12to30'])
-        self._add_tests(mesh_names=['ARRM2to18', 'ARRMwISC2to18'])
+        self._add_tests(mesh_names=['ARRM3to18', 'ARRMwISC3to18'])
         self._add_tests(mesh_names=['SOwISC12to30'],
                         mali_ais_topo='AIS_4to20km')
 
