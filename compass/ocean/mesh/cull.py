@@ -204,8 +204,8 @@ class CullMeshStep(Step):
             inject_bathymetry(mesh_file='culled_mesh.nc')
 
 
-def cull_mesh(with_cavities=False, with_critical_passages=False,
-              custom_critical_passages=None, custom_land_blockages=None,
+def cull_mesh(with_cavities=False, with_critical_passages=True,
+              custom_critical_passages='CriticalPassages.geojson', custom_land_blockages='LandBlockages.geojson',
               preserve_floodplain=False, logger=None, use_progress_bar=True,
               process_count=1, convert_to_cdf5=False, latitude_threshold=43.,
               sweep_count=20):
