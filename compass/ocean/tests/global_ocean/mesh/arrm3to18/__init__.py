@@ -54,8 +54,8 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
 # use 1 degree to go faster
-        dlon = 1.0
-        #dlon = 0.1
+        #dlon = 1.0
+        dlon = 0.1
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
@@ -83,11 +83,11 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         # Expand from 1D to 2D. Pick one of these:
 
-        QU1D = 18.0*np.ones(lat.size)
-        _, cellWidthLowRes = np.meshgrid(lon, QU1D)
+        #QU1D = 18.0*np.ones(lat.size)
+        #_, cellWidthLowRes = np.meshgrid(lon, QU1D)
 
-        #RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
-        #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
+        RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
+        _, cellWidthLowRes = np.meshgrid(lon, RRS1D)
 
         #RRS1D = mdt.RRS_CellWidthVsLat(lat, 30.0, 10.0)
         #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
@@ -100,6 +100,7 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
 
         # global settings for regionally-refined mesh
         highRes = 3.0  # [km]
+        #highRes = 2.4 # [km]
         midRes =  6.0  # [km]
         transitionOffsetGlobal = 0.0 * km
         transitionWidthGlobal = 2000.0 * km
