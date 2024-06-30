@@ -1,0 +1,82 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hel Peninsula",
+        "tags": "Hel_Peninsula;land_blockage",
+        "object": "transect",
+        "component": "ocean",
+        "author": "Mark Petersen"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            18.32268173599809,
+            54.82929208231221
+          ],
+          [
+            18.595717030621387,
+            54.72526610658508
+          ],
+          [
+            18.72870488292881,
+            54.67105525369263
+          ],
+          [
+            18.815348302084857,
+            54.60686151342858
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ob blockage",
+        "tags": "Ob;land_blockage",
+        "object": "transect",
+        "component": "ocean",
+        "author": "Mark Petersen"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            78.03279703376268,
+            67.90182503304243
+          ],
+          [
+            76.56936072289392,
+            67.90182503304243
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ob East blockage",
+        "tags": "Ob East;land_blockage",
+        "object": "transect",
+        "component": "ocean",
+        "author": "Mark Petersen"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            82.99736731193059,
+            71.65025042663748
+          ],
+          [
+            83.9421173354039,
+            71.82440205314026
+          ]
+        ]
+      }
+    }
+  ]
+}
