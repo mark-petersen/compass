@@ -424,4 +424,3 @@ def _plot_cartopy(nPlot, varName, var, map_name):
     gl.left_labels = False
     plt.colorbar(im, shrink=.9)
     plt.title(varName)
-
