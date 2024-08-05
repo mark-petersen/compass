@@ -1,5 +1,8 @@
 <streams>
 
+<stream name="mixedLayerDepthsOutput"
+        io_type="pnetcdf,cdf5"/>
+
 <stream name="output_ssh"
         io_type="pnetcdf,cdf5"/>
 
