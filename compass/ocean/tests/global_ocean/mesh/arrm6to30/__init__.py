@@ -14,9 +14,9 @@ from mpas_tools.viz.colormaps import register_sci_viz_colormaps
 from compass.mesh import QuasiUniformSphericalMeshStep
 
 
-class ARRM10to60BaseMesh(QuasiUniformSphericalMeshStep):
+class ARRM6to30BaseMesh(QuasiUniformSphericalMeshStep):
     """
-    A step for creating the ARRM10to60 base mesh
+    A step for creating the ARRM6to30 base mesh
     """
     def setup(self):
         """
@@ -68,12 +68,11 @@ class ARRM10to60BaseMesh(QuasiUniformSphericalMeshStep):
 
         # Create cell width vs latitude for Atlantic and Pacific basins
         qu1 = np.ones(lat.size)
-        ec30to60 = mdt.EC_CellWidthVsLat(lat)
-        rrs10to30 = mdt.RRS_CellWidthVsLat(lat, 30, 10)
-        atl_nh = rrs10to30
-        atl_vs_lat = mdt.mergeCellWidthVsLat(lat, ec30to60, atl_nh, 0, 6)
-        pac_nh = mdt.mergeCellWidthVsLat(lat, 30 * qu1, rrs10to30, 50, 10)
-        pac_vs_lat = mdt.mergeCellWidthVsLat(lat, ec30to60, pac_nh, 0, 6)
+        rrs6to30 = mdt.RRS_CellWidthVsLat(lat, 30, 6)
+        atl_nh = rrs6to30
+        atl_vs_lat = mdt.mergeCellWidthVsLat(lat, 30 * qu1, atl_nh, 0, 6)
+        pac_nh = mdt.mergeCellWidthVsLat(lat, 30 * qu1, rrs6to30, 50, 10)
+        pac_vs_lat = mdt.mergeCellWidthVsLat(lat, 30 * qu1, pac_nh, 0, 6)
 
         # Expand from 1D to 2D
         _, atl_grid = np.meshgrid(lon, atl_vs_lat)
