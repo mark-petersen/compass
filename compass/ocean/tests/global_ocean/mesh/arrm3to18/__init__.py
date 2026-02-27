@@ -54,8 +54,8 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
         """
 
 # use 1 degree to go faster
-        #dlon = 1.0
-        dlon = 0.1
+        dlon = 1.0
+        #dlon = 0.1
 
         dlat = dlon
         earth_radius = constants['SHR_CONST_REARTH']
@@ -81,13 +81,22 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
 #
 ########################################################################
 
+        qu1 = np.ones(lat.size)
+        rrs = mdt.RRS_CellWidthVsLat(lat, 30, 10)
+        cellWidthLat  = mdt.mergeCellWidthVsLat(lat, 30 * qu1, rrs, 0, 6)
+        _, cellWidthLowRes = np.meshgrid(lon, cellWidthLat)
+
         # Expand from 1D to 2D. Pick one of these:
 
-        #QU1D = 18.0*np.ones(lat.size)
+        #QU1D = 30.0*np.ones(lat.size)
         #_, cellWidthLowRes = np.meshgrid(lon, QU1D)
 
-        RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
-        _, cellWidthLowRes = np.meshgrid(lon, RRS1D)
+# orig mrp 260226
+        #RRS1D = mdt.RRS_CellWidthVsLat(lat, 18.0, 6.0)
+        #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
+
+        #RRS1D = mdt.RRS_CellWidthVsLat(lat, 30.0, 6.0)
+        #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
 
         #RRS1D = mdt.RRS_CellWidthVsLat(lat, 30.0, 10.0)
         #_, cellWidthLowRes = np.meshgrid(lon, RRS1D)
@@ -99,9 +108,9 @@ class ARRM3to18BaseMesh(QuasiUniformSphericalMeshStep):
 ########################################################################
 
         # global settings for regionally-refined mesh
-        highRes = 3.0  # [km]
+        highRes = 6.0  # [km]
         #highRes = 2.4 # [km]
-        midRes =  6.0  # [km]
+        midRes =  10.0  # [km]
         transitionOffsetGlobal = 0.0 * km
         transitionWidthGlobal = 2000.0 * km
 
