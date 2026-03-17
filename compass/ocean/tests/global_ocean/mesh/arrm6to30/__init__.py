@@ -25,6 +25,7 @@ class ARRM6to30BaseMesh(QuasiUniformSphericalMeshStep):
         inputs = ['Americas_land_mask.geojson',
                   'Atlantic_region.geojson',
                   'Indian_region.geojson',
+                  'Red_Sea_region.geojson',
                   'Europe_Africa_land_mask.geojson']
         for filename in inputs:
             self.add_input_file(filename=filename,
@@ -117,6 +118,14 @@ class ARRM6to30BaseMesh(QuasiUniformSphericalMeshStep):
         # Merge: step transition over land, smooth transition over water
         cell_width = \
             cell_width_sharp * land_mask + cell_width_smooth * (1 - land_mask)
+
+        # Create a mask to set resolution over Red Sea region
+        fc = read_feature_collection('Red_Sea_region.geojson')
+        redsea_mask = mask_from_geojson(fc, lon, lat)
+
+        # Merge: step transition
+        cell_width = \
+            ind_grid * redsea_mask + cell_width * (1 - redsea_mask)
 
         ax = plt.subplot(4, 2, 1)
         ax.plot(lat, atl_vs_lat, label='Atlantic')
