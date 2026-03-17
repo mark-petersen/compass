@@ -72,7 +72,7 @@ class ARRM6to30BaseMesh(QuasiUniformSphericalMeshStep):
         rrs6to30 = mdt.RRS_CellWidthVsLat(lat, 30, 6)
         atl_nh = rrs6to30
         atl_vs_lat = mdt.mergeCellWidthVsLat(lat, 30 * qu1, atl_nh, 0, 6)
-        pac_nh = mdt.mergeCellWidthVsLat(lat, 30 * qu1, rrs6to30, 32, 10)
+        pac_nh = mdt.mergeCellWidthVsLat(lat, 30 * qu1, rrs6to30, 25, 5)
         pac_vs_lat = mdt.mergeCellWidthVsLat(lat, 30 * qu1, pac_nh, 0, 6)
         ind_vs_lat = 30 * qu1
 
