@@ -24,6 +24,7 @@ class ARRM6to30BaseMesh(QuasiUniformSphericalMeshStep):
         """
         inputs = ['Americas_land_mask.geojson',
                   'Atlantic_region.geojson',
+                  'Indian_region.geojson',
                   'Europe_Africa_land_mask.geojson']
         for filename in inputs:
             self.add_input_file(filename=filename,
@@ -71,12 +72,25 @@ class ARRM6to30BaseMesh(QuasiUniformSphericalMeshStep):
         rrs6to30 = mdt.RRS_CellWidthVsLat(lat, 30, 6)
         atl_nh = rrs6to30
         atl_vs_lat = mdt.mergeCellWidthVsLat(lat, 30 * qu1, atl_nh, 0, 6)
-        pac_nh = mdt.mergeCellWidthVsLat(lat, 30 * qu1, rrs6to30, 50, 10)
+        pac_nh = mdt.mergeCellWidthVsLat(lat, 30 * qu1, rrs6to30, 32, 10)
         pac_vs_lat = mdt.mergeCellWidthVsLat(lat, 30 * qu1, pac_nh, 0, 6)
+        ind_vs_lat = 30 * qu1
 
         # Expand from 1D to 2D
         _, atl_grid = np.meshgrid(lon, atl_vs_lat)
         _, pac_grid = np.meshgrid(lon, pac_vs_lat)
+        _, ind_grid = np.meshgrid(lon, ind_vs_lat)
+
+        # Signed distance of Indian region
+        fc = read_feature_collection('Indian_region.geojson')
+        signed_distance = signed_distance_from_geojson(
+            fc, lon, lat, earth_radius, max_length=0.25)
+
+        # Merge Indian and Pacific distributions smoothly
+        transition_width = 500.0 * km
+        mask_smooth = 0.5 * (1 + np.tanh(signed_distance / transition_width))
+        pac_ind_grid = \
+            pac_grid * mask_smooth + ind_grid * (1 - mask_smooth)
 
         # Signed distance of Atlantic region
         fc = read_feature_collection('Atlantic_region.geojson')
@@ -87,7 +101,7 @@ class ARRM6to30BaseMesh(QuasiUniformSphericalMeshStep):
         transition_width = 500.0 * km
         mask_smooth = 0.5 * (1 + np.tanh(signed_distance / transition_width))
         cell_width_smooth = \
-            pac_grid * mask_smooth + atl_grid * (1 - mask_smooth)
+            pac_ind_grid * mask_smooth + atl_grid * (1 - mask_smooth)
 
         # Merge Atlantic and Pacific distributions with step function
         mask_sharp = 0.5 * (1 + np.sign(signed_distance))
